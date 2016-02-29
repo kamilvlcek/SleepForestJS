@@ -1,4 +1,5 @@
 var TXT_VSTUP = 1;
+var OBR_1 = 1;
 
 function init() {	
 	experiment.setMap("TEST-SleepForest Edo11h"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
@@ -13,8 +14,8 @@ function run() {
 		
 		preference.get("Kocka").setActive(true);
 		//platform.get("plosina").doRotateTime(10000,5,-1);
-          text.create(TXT_VSTUP, 10, 10, 255, 255,0, 4, "nic"); // nazev aktivniho mista - zluta
-          //experiment.addScreenShape(0, 10, 10, 255, 255, 255, 256, 256, 0, false, "PsuAVCR.icon-circle");
+    text.create(TXT_VSTUP, 10, 10, 255, 255,0, 4, "Najdi kocku"); // nazev aktivniho mista - zluta
+    experiment.addScreenShape(OBR_1, 10, 10, 255, 255, 255, 256, 256, 0, false, "ASochy.cat");
           
 	}
 	if (key.pressed("g")){
@@ -25,10 +26,10 @@ function run() {
 	}
 	
 	if (key.pressed("t")){
-		//void modifyScreenShape(0, true);
+		  experiment.modifyScreenShape(OBR_1, true);
 	}
 	if (key.pressed("r")){
-		//void modifyScreenShape(0, false);
+		  experiment.modifyScreenShape(OBR_1, false);
 	}
 	
 	if (preference.get("Kocka").entered()){
