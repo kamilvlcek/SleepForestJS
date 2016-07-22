@@ -22,12 +22,12 @@ var ActiveAimName = 'AimE4'; // jmeno aktualniho aktivniho cile  - AimName+Squar
 var ActiveTeepee = 'E4'; // oznaceni aktualniho ctverce k navigaci
 var AnimalPicturesHandles = {}; // pole handelu obrazku zvirat - jestli byla uz pouzita textura nebo ne 
 var AnimalHandleLast = 0; // posledni prirazeny handle obrazku v  AnimalPicturesUsed
-var InactiveNames = []; // jmena vsechn neaktivnich zvirat, kam dojit je chyba
+var InactiveNames = ['AimE6']; // jmena vsechn neaktivnich zvirat, kam dojit je chyba
 var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Edo11h"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Edo12"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -38,11 +38,11 @@ function run() {
 		experiment.setPlayerSpeed(440);
 		
 		//platform.get("plosina").doRotateTime(10000,5,-1);
-    text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta      
-    text.create(TXT_SEKVENCE, 800, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
-    text.create(TXT_CHYBPOCET, 900, 10, 255,0,0, 4, ""); // pocet chyb
-    text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby    
-    ActivateAnimal(iPhase,iSequence);          
+        text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta      
+        text.create(TXT_SEKVENCE, 800, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
+        text.create(TXT_CHYBPOCET, 900, 10, 255,0,0, 4, ""); // pocet chyb
+        text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby    
+        ActivateAnimal(iPhase,iSequence);          
 	}
 	if (key.pressed("g")){
 		preference.get(ActiveAimName).setVisible(true);
@@ -59,9 +59,12 @@ function run() {
 	}
 	
 	if (preference.get(ActiveAimName).entered()){
-		 text.modify(TXT_UKOL,"VYBORNE !");
+     text.modify(TXT_UKOL,"VYBORNE !");
      experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
-     preference.get(ActiveAimName).setActive(false);
+      preference.get(ActiveAimName).setActive(false);
+      for(iaim = 0; iaim < InactiveNames.length; iaim++){
+        preference.get(InactiveNames[iaim]).setActive(false);
+      } 
      iSequence += 1;
      if(iSequence>=AnimalSequence[iPhase].length) {
       iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
@@ -69,7 +72,7 @@ function run() {
      text.modify(TXT_SEKVENCE,iSequence);
 	}
 	
-	if (preference.get(ActiveAimName).left()){  
+	if (preference.get(ActiveAimName).left()){         
 		 ActivateAnimal(iPhase,iSequence);   
 	}
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
@@ -81,9 +84,10 @@ function run() {
       debug.log("chyba vstup: "+InactiveEntered);
     }
   }
+  
   if(InactiveEntered.length>0 && preference.get(InactiveEntered).left() ) {
       text.modify(TXT_CHYBA,""); 
-      InactiveEntered = ''; 
+      InactiveEntered = '';         
   }
 	
 }
@@ -95,6 +99,7 @@ function ActivateAnimal(iPhase,iSequence){
      
      ActiveAimName = AimName+SquareName+AimNo;
      debug.log('ActiveAimName: '+ActiveAimName); 
+     preference.get(ActiveAimName).setActive(true);
      
      InactiveNames = [];
      for (ianimal = 0; ianimal < AnimalSequence[iPhase].length; ianimal++){
@@ -106,12 +111,18 @@ function ActivateAnimal(iPhase,iSequence){
               continue;                 
             } else {
               InactiveNames.push(Aim);
-              preference.get(ActiveAimName).setActive(true);
-              //debug.log("dalsi InactiveName " + Aim);
+              
+                              
             }         
      }
-     debug.log("InactiveNames: " + InactiveNames);  
-     preference.get(ActiveAimName).setActive(true);
+     debug.log("InactiveNames: " + InactiveNames); 
+     for(iaim = 0; iaim < InactiveNames.length; iaim++){
+       Aim = InactiveNames[iaim];
+       debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
+       preference.get(Aim).setActive(true);     // aktivuju misto jako avoidance
+     }
+      
+     
      text.modify(TXT_UKOL,"Najdi "+AnimalNames[SquareName+AimNo]);
      if(AnimalPicturesHandles[SquareName+AimNo]){
          experiment.modifyScreenShape(AnimalPicturesHandles[SquareName+AimNo], true);     // ukaze jiz drive aktivovany obrazek zvirete
