@@ -39,8 +39,8 @@ function run() {
 		
 		//platform.get("plosina").doRotateTime(10000,5,-1);
         text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta      
-        text.create(TXT_SEKVENCE, 800, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
-        text.create(TXT_CHYBPOCET, 900, 10, 255,0,0, 4, ""); // pocet chyb
+        text.create(TXT_SEKVENCE, 700, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
+        text.create(TXT_CHYBPOCET, 800, 10, 255,0,0, 4, ""); // pocet chyb
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby    
         ActivateAnimal(iPhase,iSequence);          
 	}
@@ -59,8 +59,10 @@ function run() {
 	}
 	
 	if (preference.get(ActiveAimName).entered()){
-     text.modify(TXT_UKOL,"VYBORNE !");
-     experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
+     // vstup do ciloveho mista
+      text.modify(TXT_UKOL,"VYBORNE !");
+      preference.get("AimSound").beep(1.0);  // zahraju pozitivni zvuk
+      experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
       preference.get(ActiveAimName).setActive(false);
       for(iaim = 0; iaim < InactiveNames.length; iaim++){
         preference.get(InactiveNames[iaim]).setActive(false);
@@ -77,9 +79,12 @@ function run() {
 	}
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
     if (preference.get(InactiveNames[iaim]).entered()){
-      text.modify(TXT_CHYBA,"CHYBA !");  
+      // vstup do chybneho mista
+      text.modify(TXT_CHYBA,"CHYBA !"); 
+      preference.get("AvoidSound").beep(1.0);  // zahraju vystrazny zvuk
       ErrorsNumber +=1; 
-      text.modify(TXT_CHYBPOCET,ErrorsNumber); 
+      text.modify(TXT_CHYBPOCET,ErrorsNumber);
+      debug.log("Pocet chyb: "+ErrorsNumber); 
       InactiveEntered = InactiveNames[iaim]; 
       debug.log("chyba vstup: "+InactiveEntered);
     }
@@ -110,18 +115,15 @@ function ActivateAnimal(iPhase,iSequence){
               //debug.log("nepouzit InactiveName " + Aim); 
               continue;                 
             } else {
-              InactiveNames.push(Aim);
-              
-                              
+              InactiveNames.push(Aim);             
             }         
      }
      debug.log("InactiveNames: " + InactiveNames); 
      for(iaim = 0; iaim < InactiveNames.length; iaim++){
        Aim = InactiveNames[iaim];
-       debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
-       preference.get(Aim).setActive(true);     // aktivuju misto jako avoidance
-     }
-      
+       //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
+       preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
+     }      
      
      text.modify(TXT_UKOL,"Najdi "+AnimalNames[SquareName+AimNo]);
      if(AnimalPicturesHandles[SquareName+AimNo]){
@@ -132,9 +134,6 @@ function ActivateAnimal(iPhase,iSequence){
          AnimalPicturesHandles[SquareName+AimNo] =   AnimalHandleLast;  // dynamicky postupne prirazuju obrazku handle
      }
      ActiveTeepee = SquareName+AimNo; 
-     // zobrazim obrazek
-     // experiment.addScreenShape(OBR_1, 10, 10, 255, 255, 255, 256, 256, 0, false, "ASochy.cat");
-     // muzu zmenit aktivni obrazek?  
 }
 
 function toInt(n){ // prevede float to int
