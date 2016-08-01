@@ -107,22 +107,25 @@ function ActivateAnimal(iPhase,iSequence){
      preference.get(ActiveAimName).setActive(true);
      
      InactiveNames = [];
-     for (ianimal = 0; ianimal < AnimalSequence[iPhase].length; ianimal++){
-            aimn =  AnimalSequence[iPhase][ianimal];            
-            squaren = aimn < 10 ? SquarePairs[iPhase][0] : SquarePairs[iPhase][1];    
-            Aim =  AimName+squaren+ (aimn%10); // jmeno jednoho z cilu
+     for (isquare = 0; isquare < SquarePairs[iPhase].length; isquare++){ // pro vsechny ted aktivni ctverce
+        for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typy v tomto ctverci
+            //aimn =  AnimalSequence[iPhase][ianimal];            
+            squaren = SquarePairs[iPhase][isquare];    
+            Aim =  AimName+squaren+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
             if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
               //debug.log("nepouzit InactiveName " + Aim); 
               continue;                 
             } else {
               InactiveNames.push(Aim);             
             }         
+        }
      }
      debug.log("InactiveNames: " + InactiveNames); 
      for(iaim = 0; iaim < InactiveNames.length; iaim++){
        Aim = InactiveNames[iaim];
        //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
        preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
+       preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
      }      
      
      text.modify(TXT_UKOL,"Najdi "+AnimalNames[SquareName+AimNo]);
