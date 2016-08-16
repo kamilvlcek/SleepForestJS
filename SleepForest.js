@@ -1,20 +1,28 @@
 // treningova faze - uceni se zviratum v postupnych dvojicich ctvercu
 var TXT_UKOL = 1;   // text soucasneho ukolu - najdi kocku napriklad
+var TXT_CTVEREC = 5;   // cislo dvojice ctvercu
 var TXT_SEKVENCE = 2; // cislo zvirete v sekvenci
 var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 
 // ctverce ABCDEFGHI, v kazdem stany 1-6
 var SquarePairs=Array();
-SquarePairs=[['E','D'],['C','D']];  // poradi dvojic ctvercu podle fazi treningu
-
-var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
-AnimalSequence=[[4,6,4,6,12,16,12,16],[1,11,6,17,11,6,17,1]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
+SquarePairs=[['E','D'],['D','A']];  // poradi dvojic ctvercu podle fazi treningu
+SquarePassage=[[4,2],[1,3]]; // který z plotù se má odstranit pro prùchod mezi ètverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
  
-var AnimalNames= {E4:'KOCKU',E6:'VLKA',D2:'PRASE',D6:'MEDVEDA'}; // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
-var AnimalPictures = {E4:"Obrazky.cat",E6:"Obrazky.wolf",D2:"Obrazky.boar",D6:"Obrazky.bear"}; // jmena textur - obrazku zvirat  zobrazeni
+var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
+AnimalSequence=[[4,6,4,6,12,16,12,16],[2,13,6,15,13,6,15,2]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
+ 
+var AnimalNames= {E4:'KOCKU',E6:'VLKA',D2:'PRASE',D6:'MEDVEDA',A3:'REJNOKA',A5:'ZRALOKA'}; // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
+var AnimalPictures = {E4:"Obrazky.cat",E6:"Obrazky.wolf",D2:"Obrazky.boar",D6:"Obrazky.bear",A3:"Obrazky.ray",A5:"Obrazky.shark"}; // jmena textur - obrazku zvirat  zobrazeni
+var PlotyPozice = {
+    A2:{x:-286,y:369}, A3:{x:-350,y:361},
+    D1:{x:-378,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557},
+    E1:{x:1588,y:348},E2:{x:1688,y:1534},E3:{x:1624,y:1542},E4:{x:378,y:1524}
+};
 
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
+var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
 
 var iPhase = 0;   // aktualni cislo faze 
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi 
@@ -27,7 +35,7 @@ var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Edo12"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Edo12 08-15"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -38,10 +46,13 @@ function run() {
 		experiment.setPlayerSpeed(440);
 		
 		//platform.get("plosina").doRotateTime(10000,5,-1);
-        text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta      
+        text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta  
+        text.create(TXT_CTVEREC, 600, 10, 0, 0,255, 3, ""); // cislo ctverce    
         text.create(TXT_SEKVENCE, 700, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
         text.create(TXT_CHYBPOCET, 800, 10, 255,0,0, 4, ""); // pocet chyb
-        text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby    
+        text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
+         
+        ActivateSquares(iPhase); //    
         ActivateAnimal(iPhase,iSequence);          
 	}
 	if (key.pressed("g")){
@@ -61,27 +72,31 @@ function run() {
 	if (preference.get(ActiveAimName).entered()){
      // vstup do ciloveho mista
       text.modify(TXT_UKOL,"VYBORNE !");
-      preference.get("AimSound").beep(1.0);  // zahraju pozitivni zvuk
+      preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
       experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
       preference.get(ActiveAimName).setActive(false);
       for(iaim = 0; iaim < InactiveNames.length; iaim++){
         preference.get(InactiveNames[iaim]).setActive(false);
       } 
-     iSequence += 1;
-     if(iSequence>=AnimalSequence[iPhase].length) {
-      iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
-     }
-     text.modify(TXT_SEKVENCE,iSequence);
 	}
 	
-	if (preference.get(ActiveAimName).left()){         
-		 ActivateAnimal(iPhase,iSequence);   
+	if (preference.get(ActiveAimName).left()){
+      iSequence += 1;
+      if(iSequence>=AnimalSequence[iPhase].length) {
+        // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
+        iPhase += 1;
+        ActivateSquares(iPhase);
+        iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
+      }
+      text.modify(TXT_SEKVENCE,iSequence);         
+	  ActivateAnimal(iPhase,iSequence);   
 	}
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
     if (preference.get(InactiveNames[iaim]).entered()){
       // vstup do chybneho mista
       text.modify(TXT_CHYBA,"CHYBA !"); 
-      preference.get("AvoidSound").beep(1.0);  // zahraju vystrazny zvuk
+      var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
+      preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
       ErrorsNumber +=1; 
       text.modify(TXT_CHYBPOCET,ErrorsNumber);
       debug.log("Pocet chyb: "+ErrorsNumber); 
@@ -96,11 +111,46 @@ function run() {
   }
 	
 }
+function ActivateSquares(iPhase){
+     
+     if(iPhase>0){
+         // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
+         for(p=0;p<=1;p++){
+           var CtverecName = SquarePairs[iPhase-1][p] + SquarePassage[iPhase-1][p];
+           var PlotZmiz = PlotName + CtverecName;           
+           //mark.get(PlotZmiz).setVisible(true);
+           debug.log("dolu: " + PlotZmiz );
+           if (PlotyPozice[CtverecName]!=undefined){
+             var CtverecPozice = PlotyPozice[CtverecName];
+             mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y,-222]); // 0 bude nahore, normalni je -222
+           }
+         }
+     }
+     if(iPhase>=SquarePairs.length) {
+        // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment
+        text.modify(TXT_CHYBA,"KONEC"); 
+        experiment.setStop();
+     } else {    
+       // skryju ploty mezi novymi ctverci
+       for(p=0;p<=1;p++){
+         var CtverecName = SquarePairs[iPhase][p] + SquarePassage[iPhase][p];
+         var PlotZmiz = PlotName + CtverecName;
+         //mark.get(PlotZmiz).setVisible(false);
+         debug.log("nahoru: " + PlotZmiz );
+         if (PlotyPozice[CtverecName]!=undefined){
+           var CtverecPozice = PlotyPozice[CtverecName];
+           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y,0]); // 0 bude nahore, normalni je -222
+         }   
+       }
+     }
+     text.modify(TXT_CTVEREC,iPhase+1); 
 
+}
 function ActivateAnimal(iPhase,iSequence){
-     var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
-     var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  // 
-     AimNo %= 10; // zbytek po deleni 10ti 
+    // vola se po aktivaci paru ctvercu a pak po nalezeni kazdeho zvirete
+    // aktivuje  oblast kolem zvirete jako cil, a ostatni zvirata z obou ctvercu jako avoidance 
+     var AimNo = AnimalSequence[iPhase][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti 
+     var SquareName = CtverecJmeno();  // 
      
      ActiveAimName = AimName+SquareName+AimNo;
      debug.log('ActiveAimName: '+ActiveAimName); 
@@ -108,7 +158,7 @@ function ActivateAnimal(iPhase,iSequence){
      
      InactiveNames = [];
      for (isquare = 0; isquare < SquarePairs[iPhase].length; isquare++){ // pro vsechny ted aktivni ctverce
-        for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typy v tomto ctverci
+        for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
             //aimn =  AnimalSequence[iPhase][ianimal];            
             squaren = SquarePairs[iPhase][isquare];    
             Aim =  AimName+squaren+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
@@ -152,4 +202,11 @@ function contains(arr, obj) {
        }
     }
     return false;
+}
+
+function CtverecJmeno(){
+// vraci jmeno aktualniho ctverce A-I
+     var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile  
+     var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  //
+     return    SquareName;
 }
