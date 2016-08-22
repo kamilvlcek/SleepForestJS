@@ -8,7 +8,10 @@ var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 // ctverce ABCDEFGHI, v kazdem stany 1-6
 var SquarePairs=Array();
 SquarePairs=[['E','D'],['D','A']];  // poradi dvojic ctvercu podle fazi treningu
-SquarePassage=[[4,2],[1,3]]; // který z plotù se má odstranit pro prùchod mezi ètverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
+SquarePassage={  
+    AB:['A2','B4'],BA:['A2','B4'], AD:['A3','D1'],DA:['A3','D1'],
+    DE:['D2','E4'],ED:['D2','E4']
+}; // který z plotù se má odstranit pro prùchod mezi ètverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
  
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
 AnimalSequence=[[4,6,4,6,12,16,12,16],[2,13,6,15,13,6,15,2]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
@@ -25,9 +28,9 @@ var AnimalPictures = {
 }; // jmena textur - obrazku zvirat  zobrazeni
 // pozice  -5386,852,916, kamera -5355 801 954
 var PlotyPozice = {
-    A2:{x:-286,y:369}, A3:{x:-350,y:361},
+    A2:{x:-286,y:369}, A3:{x:-350,y:-361},
     B2:{x:1685,y:-392}, B3:{x:-1621,y:-384},B4:{x:375,y:-402},
-    D1:{x:-378,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557}, 
+    D1:{x:-367,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557}, 
     E1:{x:1588,y:348},E2:{x:1688,y:1534},E3:{x:1624,y:1542},E4:{x:378,y:1524},
     F1:{x:3601,y:345}, F3:{x:3637,y:1539}, F4:{x:2391,y:1521},
     G1:{x:-322,y:2392}, G2:{x:-222,y:3578},  
@@ -139,8 +142,9 @@ function ActivateSquares(iPhase){
      
      if(iPhase>0){
          // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
+         var CtverceDvojice =  SquarePairs[iPhase-1][0]+ SquarePairs[iPhase-1][1];
          for(p=0;p<=1;p++){
-           var CtverecName = SquarePairs[iPhase-1][p] + SquarePassage[iPhase-1][p];
+           var CtverecName = SquarePassage[CtverceDvojice][p];
            var PlotZmiz = PlotName + CtverecName;           
            //mark.get(PlotZmiz).setVisible(true);
            debug.log("dolu: " + PlotZmiz );
@@ -156,9 +160,10 @@ function ActivateSquares(iPhase){
         experiment.setStop();
      } else {    
        // skryju ploty mezi novymi ctverci
+       var CtverceDvojice =  SquarePairs[iPhase][0]+ SquarePairs[iPhase][1];
        for(p=0;p<=1;p++){
-         var CtverecName = SquarePairs[iPhase][p] + SquarePassage[iPhase][p];
-         var PlotZmiz = PlotName + CtverecName;
+         var CtverecName = SquarePassage[CtverceDvojice][p];
+         var PlotZmiz = PlotName + CtverecName; 
          //mark.get(PlotZmiz).setVisible(false);
          debug.log("nahoru: " + PlotZmiz );
          if (PlotyPozice[CtverecName]!=undefined){
