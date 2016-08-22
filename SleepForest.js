@@ -13,12 +13,26 @@ SquarePassage=[[4,2],[1,3]]; // který z plotù se má odstranit pro prùchod mezi è
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
 AnimalSequence=[[4,6,4,6,12,16,12,16],[2,13,6,15,13,6,15,2]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
  
-var AnimalNames= {E4:'KOCKU',E6:'VLKA',D2:'PRASE',D6:'MEDVEDA',A3:'REJNOKA',A5:'ZRALOKA'}; // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
-var AnimalPictures = {E4:"Obrazky.cat",E6:"Obrazky.wolf",D2:"Obrazky.boar",D6:"Obrazky.bear",A3:"Obrazky.ray",A5:"Obrazky.shark"}; // jmena textur - obrazku zvirat  zobrazeni
+var AnimalNames= {
+    A3:'REJNOKA',A5:'ZRALOKA', A3:'REJNOKA',B2:'KOLIBRIKA', B6:'SOJKU',C2:'ZEBRU',C5:'JELENA', 
+    D2:'PRASE',D6:'MEDVEDA',E4:'KOCKU',E6:'VLKA',F5:'ZELVU',F1:'KROKODYLA',
+    G1:'MOTYLA',G5:'VAZKU',H2:'MROZE',H5:'VELRYBU', I2:'TUCNAKA',I5:'KACHNU'
+}; // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
+var AnimalPictures = {
+    A3:"Obrazky.ray",A5:"Obrazky.shark",B2:"Obrazky.hummingbird",B6:"Obrazky.jay",C2:"Obrazky.zebra",C5:"Obrazky.deer",
+    D2:"Obrazky.boar",D6:"Obrazky.bear", E4:"Obrazky.cat",E6:"Obrazky.wolf",F5:"Obrazky.turtle",F1:"Obrazky.crocodile",  
+    G1:"Obrazky.butterfly", G5:"Obrazky.dragonfly", H2:"Obrazky.walrus", H5:"Obrazky.whale", I2:"Obrazky.penguin", I5:"Obrazky.duck"
+}; // jmena textur - obrazku zvirat  zobrazeni
+// pozice  -5386,852,916, kamera -5355 801 954
 var PlotyPozice = {
     A2:{x:-286,y:369}, A3:{x:-350,y:361},
-    D1:{x:-378,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557},
-    E1:{x:1588,y:348},E2:{x:1688,y:1534},E3:{x:1624,y:1542},E4:{x:378,y:1524}
+    B2:{x:1685,y:-392}, B3:{x:-1621,y:-384},B4:{x:375,y:-402},
+    D1:{x:-378,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557}, 
+    E1:{x:1588,y:348},E2:{x:1688,y:1534},E3:{x:1624,y:1542},E4:{x:378,y:1524},
+    F1:{x:3601,y:345}, F3:{x:3637,y:1539}, F4:{x:2391,y:1521},
+    G1:{x:-322,y:2392}, G2:{x:-222,y:3578},  
+    H1:{x:1595,y:2333}, H2:{x:1698,y:3549}, H4:{x:388,y:3539},
+    I1:{x:3631,y:2399}, I4:{x:2421,y:3575}
 };
 
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
@@ -33,9 +47,11 @@ var AnimalHandleLast = 0; // posledni prirazeny handle obrazku v  AnimalPictures
 var InactiveNames = ['AimE6']; // jmena vsechn neaktivnich zvirat, kam dojit je chyba
 var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci
+var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, nebo '' pokud v zadnem cili
+ // blbne funkce left
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Edo12 08-15"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Edo12 08-22"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -69,7 +85,9 @@ function run() {
 		  experiment.modifyScreenShape(OBR_1, false);
 	}
 	
-	if (preference.get(ActiveAimName).entered()){
+	if (IsInAim=="" && preference.get(ActiveAimName).entered()){
+      debug.log("entered Aim: "+ActiveAimName);
+      IsInAim = ActiveAimName;
      // vstup do ciloveho mista
       text.modify(TXT_UKOL,"VYBORNE !");
       preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
@@ -80,11 +98,13 @@ function run() {
       } 
 	}
 	
-	if (preference.get(ActiveAimName).left()){
+	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left()){
+      debug.log("left Aim: "+ActiveAimName);
+      IsInAim = "";
       iSequence += 1;
       if(iSequence>=AnimalSequence[iPhase].length) {
         // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
-        iPhase += 1;
+        iPhase += 1;        
         ActivateSquares(iPhase);
         iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
       }
@@ -92,8 +112,10 @@ function run() {
 	  ActivateAnimal(iPhase,iSequence);   
 	}
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
-    if (preference.get(InactiveNames[iaim]).entered()){
+    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered()){
       // vstup do chybneho mista
+      debug.log("entered Avoid: "+InactiveNames[iaim]);
+      IsInAim = InactiveNames[iaim];
       text.modify(TXT_CHYBA,"CHYBA !"); 
       var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
       preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
@@ -105,7 +127,9 @@ function run() {
     }
   }
   
-  if(InactiveEntered.length>0 && preference.get(InactiveEntered).left() ) {
+  if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() ) {
+      debug.log("left Avoid: "+InactiveEntered);
+      IsInAim = "";
       text.modify(TXT_CHYBA,""); 
       InactiveEntered = '';         
   }
