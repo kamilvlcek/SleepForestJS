@@ -6,12 +6,16 @@ var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
 
-// ctverce ABCDEFGHI, v kazdem stany 1-6
+// ctverce ABCDEFGHI, v kazdem z nich stany 1-6
 var SquarePairs=Array();
-SquarePairs=[['E','D'],['D','A']];  // poradi dvojic ctvercu podle fazi treningu
+SquarePairs=[['E','D'],['D','A'],['A','B'],['B','C'],['C','F'],['F','I'],['I','H'],['H','G']];  // poradi dvojic ctvercu podle fazi treningu
 
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
-AnimalSequence=[[0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
+AnimalSequence=[[0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],      // zatim stale stejne sekvence
+                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
+                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
+                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11]
+]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
  
 var AnimalNames= {  // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
     A3:'REJNOKA',A5:'ZRALOKA', A3:'REJNOKA',B2:'KOLIBRIKA', B6:'SOJKU',C2:'ZEBRU',C5:'JELENA', 
@@ -29,6 +33,7 @@ var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
     A2:{x:-286,y:369}, A3:{x:-350,y:-361},
     B2:{x:1685,y:-392}, B3:{x:-1621,y:-384},B4:{x:375,y:-402},
+    C3:{x:3634,y:-380}, C4:{x:2388,y:-398},
     D1:{x:-367,y:363}, D2:{x:-278,y:1549}, D2:{x:-332,y:1557}, 
     E1:{x:1588,y:348},E2:{x:1688,y:1534},E3:{x:1624,y:1542},E4:{x:378,y:1524},
     F1:{x:3601,y:345}, F3:{x:3637,y:1539}, F4:{x:2391,y:1521},
@@ -39,7 +44,7 @@ var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
 
 var SquarePassage={  // jake ploty se maji zvednou pro pruchod mezi dvojici sousedicich ctvercu
     AB:['A2','B4'],BA:['A2','B4'], AD:['A3','D1'],DA:['A3','D1'],
-    BC:['B2','C4'],CB:['B2','C4'], BE:['A3','D1'],EB:['A3','D1'],
+    BC:['B2','C4'],CB:['B2','C4'], BE:['B3','E1'],EB:['B3','E1'],
     CF:['C3','F1'],FC:['C3','F1'],
     DE:['D2','E4'],ED:['D2','E4'], DG:['D3','G1'],GD:['D3','G1'],
     EF:['E2','F4'],FE:['E2','F4'], EH:['E3','H1'],HE:['E3','H1'],
@@ -161,8 +166,7 @@ function run() {
   }
 	
 }
-function ActivateSquares(iPhase){
-     
+function ActivateSquares(iPhase){     
      if(iPhase>0){
          // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
          var CtverceDvojice =  SquarePairs[iPhase-1][0]+ SquarePairs[iPhase-1][1];
@@ -179,7 +183,7 @@ function ActivateSquares(iPhase){
      }
      if(iPhase>=SquarePairs.length) {
         // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment
-        text.modify(TXT_CHYBA,"KONEC"); 
+        text.modify(TXT_INSTRUKCE,"KONEC"); 
         experiment.setStop();
      } else {    
        // skryju ploty mezi novymi ctverci
@@ -191,7 +195,7 @@ function ActivateSquares(iPhase){
          debug.log("nahoru: " + PlotZmiz );
          if (PlotyPozice[CtverecName]!=undefined){
            var CtverecPozice = PlotyPozice[CtverecName];
-           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y,0]); // 0 bude nahore, normalni je -222
+           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y,-400]); // -400 bude skryto bude nahore, normalni je -222
          }   
        }
        AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
