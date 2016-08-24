@@ -6,20 +6,8 @@ var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
 
+
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
-var SquarePairs=Array();
-SquarePairs=[['E','D'],['D','A'],['A','B'],['B','C'],['C','F'],['F','I'],['I','H'],['H','G']];  // poradi dvojic ctvercu podle fazi treningu
-
-var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
-AnimalSequence=[[0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],      // zatim stale stejne sekvence
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11]
-]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
-
-var TestSequence = [ ['E',1],['D',0], ['A',1], ['B',0], ['C',1], ['F',0], ['I',1], ['H',0] , ['G',1] ]; // sekvence ctvercu a cisel zvirat. Cisla zvirat jsou indexy v AnimalPositions
-var DoTest = true;
- 
 var AnimalNames= {  // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
     A3:'REJNOKA',A5:'ZRALOKA', A3:'REJNOKA',B2:'KOLIBRIKA', B6:'SOJKU',C2:'ZEBRU',C5:'JELENA', 
     D2:'PRASE',D6:'MEDVEDA',E4:'KOCKU',E6:'VLKA',F1:'KROKODYLA',F5:'ZELVU',
@@ -103,7 +91,7 @@ function run() {
         text.create(TXT_INSTRUKCE, 150, 400, 255, 255, 255, 4, DoTest ? "" : "NOVA DVOJICE CTVERCU"); // instrukce uprostred obrazovky
          
         ActivateSquares(iPhase); //    
-        ActivateAnimal(iPhase,iSequence);          
+        ActivateAnimal(iPhase,iSequence);
 	}
 	if (key.pressed("g")){
 		preference.get(ActiveAimName).setVisible(true);
@@ -122,6 +110,7 @@ function run() {
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
 	if (IsInAim=="" && preference.get(ActiveAimName).entered()){
       debug.log("entered Aim: "+ActiveAimName);
+      experiment.logToTrackLog("Aim entrance:"+ActiveAimName);
       IsInAim = ActiveAimName;
       // vstup do ciloveho mista
       text.modify(TXT_UKOL,"VYBORNE !");
@@ -139,6 +128,7 @@ function run() {
 	
 	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left()){
       debug.log("left Aim: "+ActiveAimName);
+      experiment.logToTrackLog("Aim left:"+ActiveAimName);
       IsInAim = "";       
       iSequence += 1;
       var delkasekvence = DoTest?  1 : AnimalSequence[iPhase].length;
@@ -149,7 +139,8 @@ function run() {
         ActivateSquares(iPhase);
         iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
       }
-      text.modify(TXT_SEKVENCE,DoTest ? iPhase : iSequence);         
+      text.modify(TXT_SEKVENCE,DoTest ? iPhase : iSequence);
+      experiment.logToTrackLog("Entrances:" + (DoTest ? iPhase : iPhase + "/" + iSequence) );         
   	  ActivateAnimal(iPhase,iSequence); 
       
 	}
@@ -157,6 +148,7 @@ function run() {
     if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered()){
       // vstup do chybneho mista
       debug.log("entered Avoid: "+InactiveNames[iaim]);
+      experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
       IsInAim = InactiveNames[iaim];       
       text.modify(TXT_CHYBA,"CHYBA !"); 
       //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
@@ -166,6 +158,7 @@ function run() {
         text.modify(TXT_CHYBPOCET,ErrorsNumber);
         debug.log("Pocet chyb: "+ErrorsNumber); 
       }
+      experiment.logToTrackLog("Errors:"+ErrorsNumber);
       InactiveEntered = InactiveNames[iaim]; 
       
     }
@@ -173,6 +166,7 @@ function run() {
   
   if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() ) {
       debug.log("left Avoid: "+InactiveEntered);
+      experiment.logToTrackLog("Avoid left:"+InactiveEntered);
       IsInAim = "";
       text.modify(TXT_CHYBA,""); 
       InactiveEntered = '';         
@@ -186,6 +180,7 @@ function ActivateSquares(iPhase){
        if(iPhase>=TestSequence.length) {
           text.modify(TXT_INSTRUKCE,"KONEC"); 
           debug.log('konec');
+          experiment.logToTrackLog("Entrances:" + iPhase  ); 
           experiment.setStop();
        } 
      }  else {   
@@ -197,6 +192,7 @@ function ActivateSquares(iPhase){
           // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment
           text.modify(TXT_INSTRUKCE,"KONEC");
           debug.log('konec'); 
+          experiment.logToTrackLog("Entrances:" + iPhase + "/" + iSequence ); 
           experiment.setStop();
        } else {    
          // skryju ploty mezi novymi ctverci
@@ -219,7 +215,8 @@ function ActivateAnimal(iPhase,iSequence){
         var AimNo16 =   AnimalPositions[SquareName][AimNo01];  // cislo cile odpovidajici cislu stanu 1-6
      }
      ActiveAimName = AimName+SquareName+AimNo16;
-     debug.log('ActiveAimName: '+ActiveAimName); 
+     debug.log('ActiveAimName: '+ActiveAimName);
+     experiment.logToTrackLog("Aim search:"+ActiveAimName); 
      preference.get(ActiveAimName).setActive(true);
      
      // OBRAZEK A TEXT KAM NAVIGOVAT
