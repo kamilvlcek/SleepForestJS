@@ -38,7 +38,7 @@ var PlotyPozice2 = {   // ploty v rozich mezi ctverci, musi zmizet pri testu
     DE2:{x:324,y:-376},  EH1:{x:397,y:2231}, GH1:{x:323,y:2382}, DG2:{x:-266,y:2224},
     EF2:{x:2302,y:1543}, FI1:{x:2404,y:2241},HI1:{x:2303,y:2392},EH2:{x:1686,y:2237}
 };
-var SquarePassage={  // jake ploty se maji zvednou pro pruchod mezi dvojici sousedicich ctvercu
+var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
     AB:['A2','B4'],BA:['A2','B4'], AD:['A3','D1'],DA:['A3','D1'],
     BC:['B2','C4'],CB:['B2','C4'], BE:['B3','E1'],EB:['B3','E1'],
     CF:['C3','F1'],FC:['C3','F1'],
@@ -54,6 +54,11 @@ var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tom
     D:[2,6],E:[4,6],F:[1,5],
     G:[1,5],H:[2,5],I:[2,5]
 }; 
+var StartSubjectPositions = {
+    A:{x:-1053,y:-600}, B:{x:1037,y:-600}, C:{x:3069,y:-600},
+    D:{x:-1053,y:1386}, E:{x:1037,y:1386}, F:{x:3069,y:1386},
+    G:{x:-1053,y:3072}, H:{x:1037,y:3072}, I:{x:3069,y:3072}    
+}
 var AllSquares = ['A','B','C','D','E','F','G','H','I'];
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
 var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
@@ -72,7 +77,7 @@ var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, 
 var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat 
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Edo12 08-23"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena  12-9"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -175,7 +180,7 @@ function run() {
 }
 function ActivateSquares(iPhase){
     // iPhase je cislo uz nove faze, inkrementovano predtim
-     if(DoTest){
+     if(DoTest){  // TEST
        if(iPhase==0) PlotPosun(-1,0); // v prvni fazi skryje vsechny ploty
        if(iPhase>=TestSequence.length) {
           text.modify(TXT_INSTRUKCE,"KONEC"); 
@@ -183,7 +188,7 @@ function ActivateSquares(iPhase){
           experiment.logToTrackLog("Entrances:" + iPhase  ); 
           experiment.setStop();
        } 
-     }  else {   
+     }  else {    // TRENING
        if(iPhase>0){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
            PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
@@ -198,6 +203,7 @@ function ActivateSquares(iPhase){
          // skryju ploty mezi novymi ctverci
          PlotPosun(iPhase,0); // skryje plot v teto fazi  
          AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
+         PresunHrace();
        }
        text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU"); 
      }
@@ -321,4 +327,9 @@ function PlotPosun(iiPhase,ukaz){
           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?-222:-400) ]); // 0 bude nahore, normalni je -222  
        } 
     }
+}
+function PresunHrace(iiPhase){
+     SquareName = CtverecJmeno();
+     SubjektPozice =  StartSubjectPositions[SquareName];
+     experiment.setPlayerLocation([SubjektPozice.x,SubjektPozice.y]);
 }
