@@ -1,6 +1,6 @@
 // TRENING - nastaveni sekvence dvoji ctvercu
 var SquarePairs=Array();
-SquarePairs=[['E','D'],['D','A'],['A','B'],['B','C'],['C','F'],['F','I'],['I','H'],['H','G']];  // poradi dvojic ctvercu podle fazi treningu
+SquarePairs=[['E','D'],['A','B'],['I','H'],['C','F'],['H','G'],['F','I'],['B','C'],['D','A']];  // poradi dvojic ctvercu podle fazi treningu
 
 // TRENING nastaveni sekvence zvirat v kazde dvojici ctvercu
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu

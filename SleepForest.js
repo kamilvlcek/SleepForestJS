@@ -36,8 +36,17 @@ var PlotyPozice2 = {   // ploty v rozich mezi ctverci, musi zmizet pri testu
     AB2:{x:324,y:-376},  BE1:{x:389,y:249},  DE1:{x:298,y:340},  AD2:{x:-291,y:289},
     BC2:{x:2312,y:-392}, CF1:{x:2414,y:262},EF1:{x:2272,y:341}, BE2:{x:1693,y:241},
     DE2:{x:324,y:-376},  EH1:{x:397,y:2231}, GH1:{x:323,y:2382}, DG2:{x:-266,y:2224},
-    EF2:{x:2302,y:1543}, FI1:{x:2404,y:2241},HI1:{x:2303,y:2392},EH2:{x:1686,y:2237}
+    EF2:{x:2302,y:1543}, FI1:{x:2404,y:2241},HI1:{x:2303,y:2392},EH2:{x:1686,y:2237},
+    // ploty uplne na kraji, ty musi taky zmizet pri testu
+    A1:{x:-386,y:-1554}, A4:{x:-1596,y:-378},   B1:{x:1585,y:-1578},   C1:{x:3598,y:-1574}, C2:{x:3698,y:-388},
+    D4:{x:-1577,y:-1539},    F2:{x:3701,y:1531},   
+    G3:{x:-286,y:3586}, G4:{x:-1532,y:3568},   H3:{x:1633,y:3557},   I2:{x:3731,y:3585}, I3:{x:3667,y:3593},
+    AB1:{x:294,y:-1578}, BC1:{x:2282,y:-1594},
+    AD1:{x:-1571,y:285}, CF2:{x:3716,y:266},
+    DG1:{x:-1546,y:2219}, FI2:{x:3722,y:2215},
+    GH2:{x:353,y:3602}, HI2:{x:2333,y:3594},          
 };
+
 var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
     AB:['A2','B4'],BA:['A2','B4'], AD:['A3','D1'],DA:['A3','D1'],
     BC:['B2','C4'],CB:['B2','C4'], BE:['B3','E1'],EB:['B3','E1'],
@@ -178,6 +187,11 @@ function run() {
   }
 	
 }
+function timerTask(name) {	
+	if (name == "novectverce"){ 
+		text.modify(TXT_INSTRUKCE,"");
+	} 
+} 
 function ActivateSquares(iPhase){
     // iPhase je cislo uz nove faze, inkrementovano predtim
      if(DoTest){  // TEST
@@ -206,6 +220,7 @@ function ActivateSquares(iPhase){
          PresunHrace();
        }
        text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU"); 
+       timer.set("novectverce",30); // za jak dlouho tenhle napis sam zmizi
      }
      text.modify(TXT_CTVEREC,iPhase+1); // modre cislo    
 }
