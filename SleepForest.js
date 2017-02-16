@@ -64,9 +64,9 @@ var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tom
     G:[1,5],H:[2,5],I:[2,5]
 }; 
 var StartSubjectPositions = {
-    A:{x:-1053,y:-600}, B:{x:1037,y:-600}, C:{x:3069,y:-600},
-    D:{x:-1053,y:1386}, E:{x:1037,y:1386}, F:{x:3069,y:1386},
-    G:{x:-1053,y:3072}, H:{x:1037,y:3072}, I:{x:3069,y:3072}    
+    A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
+    D:{x:-1053,y:834}, E:{x:1037,y:834}, F:{x:3081,y:834},
+    G:{x:-1053,y:2900}, H:{x:1037,y:2900}, I:{x:3081,y:2900}    
 }
 var AllSquares = ['A','B','C','D','E','F','G','H','I'];
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
@@ -86,7 +86,7 @@ var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, 
 var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat 
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena  12-9"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena  01-20"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -347,4 +347,5 @@ function PresunHrace(iiPhase){
      SquareName = CtverecJmeno();
      SubjektPozice =  StartSubjectPositions[SquareName];
      experiment.setPlayerLocation([SubjektPozice.x,SubjektPozice.y]);
+     debug.log("Hrac na "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y]); 
 }
