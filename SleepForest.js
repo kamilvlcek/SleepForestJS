@@ -329,6 +329,7 @@ function PlotPosun(iiPhase,ukaz){
            mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?-222:-400) ]); // 0 bude nahore, normalni je -222
          }
        }
+       if(ukaz==0) experiment.logToTrackLog("Square Pair: "+CtverceDvojice); 
     } else {
        // vsechny ploty kterymi hybam v treningu       
        for(var key in PlotyPozice){
@@ -347,5 +348,7 @@ function PresunHrace(iiPhase){
      SquareName = CtverecJmeno();
      SubjektPozice =  StartSubjectPositions[SquareName];
      experiment.setPlayerLocation([SubjektPozice.x,SubjektPozice.y]);
-     debug.log("Hrac na "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y]); 
+     logtext =  "Player moved to: "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y];
+     debug.log(logtext); 
+     experiment.logToTrackLog(logtext); 
 }
