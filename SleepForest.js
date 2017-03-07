@@ -9,7 +9,7 @@ var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
 
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
 var AnimalNames= {  // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
-    A3:'REJNOKA',A5:'ZRALOKA', A3:'REJNOKA',B2:'KOLIBRIKA', B6:'SOJKU',C2:'ZEBRU',C5:'JELENA', 
+    A3:'REJNOKA',A5:'ZRALOKA', B2:'KOLIBRIKA', B6:'SOJKU',C2:'ZEBRU',C5:'JELENA', 
     D2:'PRASE',D6:'MEDVEDA',E4:'KOCKU',E6:'VLKA',F1:'KROKODYLA',F5:'ZELVU',
     G1:'MOTYLA',G5:'VAZKU',H2:'MROZE',H5:'VELRYBU', I2:'TUCNAKA',I5:'KACHNU'
 }; 
@@ -84,6 +84,8 @@ var ErrorsNumber = 0;       // pocet chyb v sekvenci
 var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, nebo '' pokud v zadnem cili
  // blbne funkce left
 var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat 
+var SquarePairsErrors = {}; // pole poctu chyb v kazde treningove dvojici ctvercu. V jejim poslednim vyskytu
+var SquarePairsErrorsLimit = 3; // pri kolika chybach je nutne trening na teto dvojici ctvercu opakovat
 
 function init() {	
 	experiment.setMap("TEST-SleepForest Alena  01-20"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
@@ -170,7 +172,8 @@ function run() {
       if (DoTest || AimEntrances[AimNo14()] > 0){       
         ErrorsNumber +=1;  // chyby pocitam v testu a po prvni navsteve v treningu
         text.modify(TXT_CHYBPOCET,ErrorsNumber);
-        debug.log("Pocet chyb: "+ErrorsNumber); 
+        debug.log("Pocet chyb: "+ErrorsNumber);
+        SetSquarePairErrors(iPhase,1); // zvysim pocet chyb ve dvojici ctvercu o 1        
       }
       experiment.logToTrackLog("Errors:"+ErrorsNumber);
       InactiveEntered = InactiveNames[iaim]; 
@@ -194,7 +197,7 @@ function timerTask(name) {
 } 
 function ActivateSquares(iPhase){
     // iPhase je cislo uz nove faze, inkrementovano predtim
-     if(DoTest){  // TEST
+     if(DoTest){  // ****************** TEST  ******************
        if(iPhase==0) PlotPosun(-1,0); // v prvni fazi skryje vsechny ploty
        if(iPhase>=TestSequence.length) {
           text.modify(TXT_INSTRUKCE,"KONEC"); 
@@ -202,7 +205,7 @@ function ActivateSquares(iPhase){
           experiment.logToTrackLog("Entrances:" + iPhase  ); 
           experiment.setStop();
        } 
-     }  else {    // TRENING
+     }  else {    // ****************** TRENING     ******************
        if(iPhase>0){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
            PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
@@ -217,7 +220,8 @@ function ActivateSquares(iPhase){
          // skryju ploty mezi novymi ctverci
          PlotPosun(iPhase,0); // skryje plot v teto fazi  
          AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
-         PresunHrace();
+         PresunHrace(iPhase);
+         SetSquarePairErrors(iPhase,0);
        }
        text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU"); 
        timer.set("novectverce",30); // za jak dlouho tenhle napis sam zmizi
@@ -352,3 +356,35 @@ function PresunHrace(iiPhase){
      debug.log(logtext); 
      experiment.logToTrackLog(logtext); 
 }
+
+function SetSquarePairErrors(iiPhase,n){
+  var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE
+  SquarePairsErrors[CtverceDvojice]=n;  
+}
+
+function SetSquarePairErrors(iiPhase,n){     // nastavi pocti chyb pro dvojici ctvercu - pokud n=0 tak resetuje, jinak cislo pricte k aktualni hodnote
+  var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE
+  if(n==0){ 
+    SquarePairsErrors[CtverceDvojice] = 0;
+  } else {
+    SquarePairsErrors[CtverceDvojice] = SquarePairsErrors[CtverceDvojice]+n;
+  }  
+  debug.log("SquarePairsErrors["+CtverceDvojice+"]="+SquarePairsErrors[CtverceDvojice]);
+}
+
+function SquarePairsReset(){ 
+  // funkce ktera smaze SquarePairs a naplni je temi, kde clovek delal moc chyb
+  var SquarePairs2 = [];
+  isqp = 0;
+  var CtverceDvojice="";
+  for (sqp = 0; sqp < SquarePairs.length; sqp++){
+      CtverceDvojice =  SquarePairs[sqp][0]+ SquarePairs[sqp][1]; // napriklad DE
+      if(SquarePairsErrors[CtverceDvojice]>SquarePairsErrorsLimit){
+         SquarePairs2[isqp]=[SquarePairs[sqp][0] , SquarePairs[sqp][1]];
+         isqp++;
+         SquarePairsErrors[CtverceDvojice] = 0;  // nechci tam tento par ctvercu vkladat znova           
+      }
+  } 
+
+}
+ 
