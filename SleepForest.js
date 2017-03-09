@@ -147,7 +147,7 @@ function run() {
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
       IsInAim = "";       
       iSequence += 1;
-      var delkasekvence = DoTest?  1 : AnimalSequence[iPhase].length;
+      var delkasekvence = DoTest?  1 : AnimalSequence[AnimalSequenceIndex(iPhase)].length;
       if(iSequence>=delkasekvence) {
         // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
         // v testu jdu vzdy na dalsi fazi
@@ -211,7 +211,10 @@ function ActivateSquares(iPhase){
            PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
        }
        if(iPhase>=SquarePairs.length) {
-          // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment
+          SquarePairsAdd();       // pokud jsou nejake dvojice ctvercu, kde bylo moc chyb, pridam je jeste na konec sekvence
+       }
+       if(iPhase>=SquarePairs.length) {            
+          // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment          
           text.modify(TXT_INSTRUKCE,"KONEC");
           debug.log('konec'); 
           experiment.logToTrackLog("Entrances:" + iPhase + "/" + iSequence ); 
@@ -221,10 +224,10 @@ function ActivateSquares(iPhase){
          PlotPosun(iPhase,0); // skryje plot v teto fazi  
          AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
          PresunHrace(iPhase);
-         SetSquarePairErrors(iPhase,0);
+         SetSquarePairErrors(iPhase,0);                
        }
        text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU"); 
-       timer.set("novectverce",30); // za jak dlouho tenhle napis sam zmizi
+       timer.set("novectverce",10); // za jak dlouho tenhle napis sam zmizi
      }
      text.modify(TXT_CTVEREC,iPhase+1); // modre cislo    
 }
@@ -236,7 +239,7 @@ function ActivateAnimal(iPhase,iSequence){
      if (DoTest){
         var AimNo16 =   AnimalPositions[SquareName][TestSequence[iPhase][1]];  // cislo cile odpovidajici cislu stanu 1-6
      }  else {
-        var AimNo01 = AnimalSequence[iPhase][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
+        var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
         var AimNo16 =   AnimalPositions[SquareName][AimNo01];  // cislo cile odpovidajici cislu stanu 1-6
      }
      ActiveAimName = AimName+SquareName+AimNo16;
@@ -303,15 +306,15 @@ function CtverecJmeno(){
      if (DoTest){
         var SquareName = TestSequence[iPhase][0]; 
      } else { 
-        var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile  
+        var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile  
         var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  //
      }
      return SquareName;
 }   
 function AimNo14(){     // vrati cislo zvirete 0 - 3
      if(DoTest) return 0; // aby nevznikla chyba, ale nepotrebuju cislo
-     var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
-     var AimNo01 = AnimalSequence[iPhase][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
+     var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile
+     var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
      if (AimNo < 10){
         return AimNo01;   // zvirata v prvnim ctverci budou mit cisla 0 a 1
      } else {
@@ -357,11 +360,6 @@ function PresunHrace(iiPhase){
      experiment.logToTrackLog(logtext); 
 }
 
-function SetSquarePairErrors(iiPhase,n){
-  var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE
-  SquarePairsErrors[CtverceDvojice]=n;  
-}
-
 function SetSquarePairErrors(iiPhase,n){     // nastavi pocti chyb pro dvojici ctvercu - pokud n=0 tak resetuje, jinak cislo pricte k aktualni hodnote
   var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE
   if(n==0){ 
@@ -372,19 +370,25 @@ function SetSquarePairErrors(iiPhase,n){     // nastavi pocti chyb pro dvojici c
   debug.log("SquarePairsErrors["+CtverceDvojice+"]="+SquarePairsErrors[CtverceDvojice]);
 }
 
-function SquarePairsReset(){ 
+function SquarePairsAdd(){ 
   // funkce ktera smaze SquarePairs a naplni je temi, kde clovek delal moc chyb
-  var SquarePairs2 = [];
-  isqp = 0;
+  var SquarePairs2 = SquarePairs;   // privadam zatim do kopie 
+  isqp = SquarePairs2.length;
   var CtverceDvojice="";
   for (sqp = 0; sqp < SquarePairs.length; sqp++){
       CtverceDvojice =  SquarePairs[sqp][0]+ SquarePairs[sqp][1]; // napriklad DE
-      if(SquarePairsErrors[CtverceDvojice]>SquarePairsErrorsLimit){
-         SquarePairs2[isqp]=[SquarePairs[sqp][0] , SquarePairs[sqp][1]];
+      if(SquarePairsErrors[CtverceDvojice]>=SquarePairsErrorsLimit){   // pokud vic chyb nez je limit
+         SquarePairs2[isqp]=[SquarePairs[sqp][0] , SquarePairs[sqp][1]];   // na konec kopie pole nactu tuto dvojici ctvercu
          isqp++;
-         SquarePairsErrors[CtverceDvojice] = 0;  // nechci tam tento par ctvercu vkladat znova           
+         SquarePairsErrors[CtverceDvojice] = 0;  // nechci tam tento par ctvercu vkladat znova, takze pocet chyb u nej vynuluju
+         debug.log("SquarePairsAdd: pridan ctverec "+CtverceDvojice);           
       }
-  } 
-
+  }  
+  SquarePairs = SquarePairs2;  
+  return  SquarePairs.length;
 }
  
+function AnimalSequenceIndex(iiPhase){
+   // funkce ktera vraci index v poli  AnimalSequence
+   return iiPhase  % AnimalSequence.length; // zbytek po deleni delkou - od 0 do n-1, bude se porad opakovat
+}

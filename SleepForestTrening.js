@@ -1,14 +1,14 @@
 // TRENING - nastaveni sekvence dvoji ctvercu
 var SquarePairs=Array();
-SquarePairs=[['E','D'],['A','B'],['I','H'],['C','F'],['H','G'],['F','I'],['B','C'],['D','A']];  // poradi dvojic ctvercu podle fazi treningu
+// poradi dvojic ctvercu podle fazi treningu - tohle pole urcuje delku treningu
+SquarePairs=[['E','D'], ['C','F'], ['I','H'], ['C','B'], ['F','I'], ['G','H'], ['B','A'], ['H','I'], 
+             ['F','C'], ['A','B'], ['D','G'], ['B','C'], ['H','G'], ['I','F'], ['G','D'], ['D','E']];  
+// nova sekvence 9.3.2017 - ctverce v ruzne poradi (AB i BA), neopakuji se za sebou  
 
 // TRENING nastaveni sekvence zvirat v kazde dvojici ctvercu
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
-AnimalSequence=[[0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],      // zatim stale stejne sekvence
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11],
-                [0,1,0,1,10,11,10,11,0,10,1,11],[0,1,0,1,10,11,10,11,0,10,1,11]
-]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
+// porad jedna sekvence
+AnimalSequence=[/*debug*/[0,1,0,1,10,11,10,11]  /* Trening [0,1,0,1,10,11,10,11,0,10,1,11]*/]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
 
 var DoTest = false;
 
