@@ -1,8 +1,8 @@
 // TRENING - nastaveni sekvence dvoji ctvercu
 var SquarePairs=Array();
 // poradi dvojic ctvercu podle fazi treningu - tohle pole urcuje delku treningu
-SquarePairs=[['E','D'], ['C','F'], ['I','H'], ['C','B'], ['F','I'], ['G','H'], ['B','A'], ['H','I'], 
-             ['F','C'], ['A','B'], ['D','G'], ['B','C'], ['H','G'], ['I','F'], ['G','D'], ['D','E']];  
+SquarePairs=[['E','D'], ['C','F'], ['I','H'], ['C','B'], ['F','I'], ['G','H'], ['B','A'],  ['H','I'],
+             ['G','D'], ['F','C'], ['A','B'], ['D','G'], ['B','C'], ['D','E'], ['H','G'], ['I','F']];  
 // nova sekvence 9.3.2017 - ctverce v ruzne poradi (AB i BA), neopakuji se za sebou  
 
 // TRENING nastaveni sekvence zvirat v kazde dvojici ctvercu
