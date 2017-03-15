@@ -101,7 +101,7 @@ var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto d
 var IsPauza = false; // jestli jej prave ted pauza mezi dvojicemi ctvercu v treningu
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 01-20k"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena 03-14"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
