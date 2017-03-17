@@ -22,29 +22,35 @@ var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
 // pozice zvirete v TEST-SleepForest Edo12box.ut2: -5386,852,916, kamera -5355 801 954
 
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
-    A2:{x:-286,y:369}, A3:{x:-350,y:-361},
-    B2:{x:1685,y:-392}, B3:{x:-1621,y:-384},B4:{x:375,y:-402},
-    C3:{x:3634,y:-380}, C4:{x:2388,y:-398},
-    D1:{x:-367,y:363}, D2:{x:-278,y:1549}, D3:{x:-332,y:1557}, 
-    E1:{x:1588,y:348}, E2:{x:1688,y:1534}, E3:{x:1624,y:1542},E4:{x:378,y:1524},
-    F1:{x:3601,y:345}, F3:{x:3637,y:1539}, F4:{x:2391,y:1521},
-    G1:{x:-322,y:2392}, G2:{x:-222,y:3578},  
-    H1:{x:1595,y:2333}, H2:{x:1698,y:3549}, H4:{x:388,y:3539},
-    I1:{x:3631,y:2399}, I4:{x:2421,y:3575}
+    A2:{x:-24,y:-254}, A3:{x:-244,y:-23},
+    B2:{x:1905,y:-258},    B3:{x:1517,y:-23},    B4:{x:129,y:-254},
+    C3:{x:3404,y:-23},    C4:{x:2077,y:-254},
+    D1:{x:-244,y:161},    D2:{x:-15,y:1584},    D3:{x:-220,y:1892},
+    E1:{x:1530,y:161},    E2:{x:1953,y:1584},    E3:{x:1624,y:1892},    E4:{x:195,y:1584},
+    F1:{x:3394,y:161},    F3:{x:3486,y:1892},    F4:{x:2079,y:1584},
+    G1:{x:-209,y:2064},    G2:{x:16,y:3465},
+    H1:{x:1596,y:2068},    H2:{x:1959,y:3549},    H4:{x:154,y:3472},
+    I1:{x:3482,y:2068},    I4:{x:2146,y:3533}
 };
+
 var PlotyPozice2 = {   // ploty v rozich mezi ctverci, musi zmizet pri testu
-    AB2:{x:324,y:-376},  BE1:{x:389,y:249},  DE1:{x:298,y:340},  AD2:{x:-291,y:289},
-    BC2:{x:2312,y:-392}, CF1:{x:2414,y:262},EF1:{x:2272,y:341}, BE2:{x:1693,y:241},
-    DE2:{x:324,y:-376},  EH1:{x:397,y:2231}, GH1:{x:323,y:2382}, DG2:{x:-266,y:2224},
-    EF2:{x:2302,y:1543}, FI1:{x:2404,y:2241},HI1:{x:2303,y:2392},EH2:{x:1686,y:2237},
+    AB1:{x:355,y:-1469}, AB2:{x:354,y:-229},AD1:{x:-1428,y:357},AD2:{x:-210,y:373},
+    BC1:{x:2242,y:-1484},BC2:{x:2130,y:-234},BE1:{x:331,y:357},BE2:{x:1578,y:357},
+    CF1:{x:2202,y:357},CF2:{x:3467,y:382},
+    DE1:{x:368,y:400},DE2:{x:375,y:1620},DG1:{x:-1400,y:2288},DG2:{x:-176,y:2237},
+    EF1:{x:2148,y:389},EF2:{x:2257,y:1610},EH1:{x:397,y:2267},EH2:{x:1687,y:2221},
+    FI1:{x:2287,y:2215},FI2:{x:3565,y:2323},
+    GH1:{x:405,y:2242},GH2:{x:387,y:3529},HI1:{x:2260,y:2238},HI2:{x:2275,y:3580},
+
     // ploty uplne na kraji, ty musi taky zmizet pri testu
-    A1:{x:-386,y:-1554}, A4:{x:-1596,y:-378},   B1:{x:1585,y:-1578},   C1:{x:3598,y:-1574}, C2:{x:3698,y:-388},
-    D4:{x:-1577,y:-1539},    F2:{x:3701,y:1531},   
-    G3:{x:-286,y:3586}, G4:{x:-1532,y:3568},   H3:{x:1633,y:3557},   I2:{x:3731,y:3585}, I3:{x:3667,y:3593},
-    AB1:{x:294,y:-1578}, BC1:{x:2282,y:-1594},
-    AD1:{x:-1571,y:285}, CF2:{x:3716,y:266},
-    DG1:{x:-1546,y:2219}, FI2:{x:3722,y:2215},
-    GH2:{x:353,y:3602}, HI2:{x:2333,y:3594},          
+    A1:{x:-244,y:-1816}, A1a:{x:-1429,y:-1503},A1b:{x:-214,y:-1503},A4:{x:-1812,y:-255},A4a:{x:-1451,y:-1469},A4b:{x:-1450,y:-229},
+    B1:{x:1586,y:-1827},B1a:{x:382,y:-1503},B1b:{x:1644,y:-1503},
+    C1:{x:3431,y:-1819},C1a:{x:2239,y:-1495},C1b:{x:3475,y:-1510},C2:{x:395,y:-254},C2a:{x:4191,y:-1462},C2b:{x:4025,y:-229},
+    D4:{x:-1822,y:1608},D4a:{x:-1540,y:390},D4b:{x:-1450,y:1708},
+    F2:{x:3952,y:1660},F2a:{x:4052,y:415},F2b:{x:4113,y:1705},
+    G3:{x:-211,y:3926}, G3a:{x:-1400,y:4172},G3b:{x:-179,y:4126},G3b:{x:-209,y:3926},G4:{x:-1821,y:3569},G4a:{x:-1423,y:2320},G4b:{x:-1423,y:3597},
+    H3:{x:1662,y:3920},H3a:{x:450,y:4120},H3b:{x:1711,y:4171},I2a:{x:4125,y:2347},
+    I2:{x:3924,y:3578},I2a:{x:3924,y:3578},I2b:{x:4130,y:3590},I3:{x:3546,y:3900},I3a:{x:2345,y:4159},I3b:{x:3573,y:4182}
 };
 
 var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
@@ -71,6 +77,8 @@ var AnimalXYPositions = {  // TODO - pozice zvirat abych je mohl skryvat - posou
     I1:{x:3241,y:2799,z:-254},I3:{x:3251,y:3290,z:-220}
 };
 AnimalHiddenZ = 0; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
+PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
+PlotShownZ = -222;  // vyska plotu ukazaneho
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -371,7 +379,7 @@ function PlotPosun(iiPhase,ukaz){
          debug.log( (ukaz?"ukaz: ":"skryj: ") + PlotZmiz );
          if (PlotyPozice[CtverecName]!=undefined){
            var CtverecPozice = PlotyPozice[CtverecName];
-           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?-222:-400) ]); // 0 bude nahore, normalni je -222
+           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222
          }
        }
        if(ukaz==0) experiment.logToTrackLog("Square Pair: "+CtverceDvojice); 
@@ -380,12 +388,12 @@ function PlotPosun(iiPhase,ukaz){
        for(var key in PlotyPozice){
           var PlotZmiz = PlotName + key;
           var CtverecPozice = PlotyPozice[key];
-          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?-222:-400) ]); // 0 bude nahore, normalni je -222  
+          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222  
        } 
        for(var key in PlotyPozice2){
           var PlotZmiz = PlotName + key;
           var CtverecPozice = PlotyPozice2[key];
-          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?-222:-400) ]); // 0 bude nahore, normalni je -222  
+          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222  
        } 
     }
 }

@@ -44,6 +44,6 @@ var TestSequence = [
 ['H','G',0]
 ]; 
 // sekvence ctvercu a cisel zvirat. Cisla zvirat jsou indexy v AnimalPositions
-var DoTest = true;
+var DoTest = true;        // tohle rozhoduje, jestli se jedna o test nebo trening
 
 experiment.includeScript(".//SleepForest.js");
