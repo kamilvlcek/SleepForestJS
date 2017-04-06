@@ -22,35 +22,35 @@ var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
 // pozice zvirete v TEST-SleepForest Edo12box.ut2: -5386,852,916, kamera -5355 801 954
 
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
-    A2:{x:-24,y:-254}, A3:{x:-244,y:-23},
-    B2:{x:1905,y:-258},    B3:{x:1517,y:-23},    B4:{x:129,y:-254},
-    C3:{x:3404,y:-23},    C4:{x:2077,y:-254},
-    D1:{x:-244,y:161},    D2:{x:-15,y:1584},    D3:{x:-220,y:1892},
-    E1:{x:1530,y:161},    E2:{x:1953,y:1584},    E3:{x:1624,y:1892},    E4:{x:195,y:1584},
-    F1:{x:3394,y:161},    F3:{x:3486,y:1892},    F4:{x:2079,y:1584},
-    G1:{x:-209,y:2064},    G2:{x:16,y:3465},
-    H1:{x:1596,y:2068},    H2:{x:1959,y:3549},    H4:{x:154,y:3472},
-    I1:{x:3482,y:2068},    I4:{x:2146,y:3533}
+    A2:{x:-24,y:-172}, A3:{x:-303,y:-23},
+    B2:{x:1960,y:-161},    B3:{x:1639,y:-33},    B4:{x:129,y:-172},
+    C3:{x:3498,y:39},    C4:{x:2077,y:-189},
+    D1:{x:-298,y:161},    D2:{x:-15,y:1725},    D3:{x:-266,y:2011},
+    E1:{x:1530,y:73},    E2:{x:1953,y:1678},    E3:{x:1624,y:1894},    E4:{x:195,y:1721},
+    F1:{x:3509,y:214},    F3:{x:3518,y:1957},    F4:{x:2079,y:1659},
+    G1:{x:-257,y:2146},    G2:{x:16,y:3522},
+    H1:{x:1596,y:2034},    H2:{x:1959,y:3549},    H4:{x:154,y:3511},
+    I1:{x:3524,y:2129},    I4:{x:2146,y:3533}
 };
 
 var PlotyPozice2 = {   // ploty v rozich mezi ctverci, musi zmizet pri testu
-    AB1:{x:355,y:-1469}, AB2:{x:354,y:-229},AD1:{x:-1428,y:357},AD2:{x:-210,y:373},
-    BC1:{x:2242,y:-1484},BC2:{x:2130,y:-234},BE1:{x:331,y:357},BE2:{x:1578,y:357},
-    CF1:{x:2202,y:357},CF2:{x:3467,y:382},
-    DE1:{x:368,y:400},DE2:{x:375,y:1620},DG1:{x:-1400,y:2288},DG2:{x:-176,y:2237},
-    EF1:{x:2148,y:389},EF2:{x:2257,y:1610},EH1:{x:397,y:2267},EH2:{x:1687,y:2221},
-    FI1:{x:2287,y:2215},FI2:{x:3565,y:2323},
-    GH1:{x:405,y:2242},GH2:{x:387,y:3529},HI1:{x:2260,y:2238},HI2:{x:2275,y:3580},
+    AB1:{x:355,y:-1406}, AB2:{x:324,y:-146},AD1:{x:-1478,y:472},AD2:{x:-274,y:490},
+    BC1:{x:2137,y:-1420},BC2:{x:2235,y:-173},BE1:{x:331,y:468},BE2:{x:1694,y:453},
+    CF1:{x:2312,y:426},CF2:{x:3545,y:500},
+    DE1:{x:298,y:492},DE2:{x:375,y:1737},DG1:{x:-1451,y:2347},DG2:{x:-176,y:2291},
+    EF1:{x:2272,y:446},EF2:{x:2257,y:1697},EH1:{x:397,y:2267},EH2:{x:1687,y:2309},
+    FI1:{x:2323,y:2279},FI2:{x:3565,y:2325},
+    GH1:{x:405,y:2260},GH2:{x:387,y:3524},HI1:{x:2260,y:2318},HI2:{x:2170,y:3565},
 
     // ploty uplne na kraji, ty musi taky zmizet pri testu
-    A1:{x:-244,y:-1816}, A1a:{x:-1429,y:-1503},A1b:{x:-214,y:-1503},A4:{x:-1812,y:-255},A4a:{x:-1451,y:-1469},A4b:{x:-1450,y:-229},
-    B1:{x:1586,y:-1827},B1a:{x:382,y:-1503},B1b:{x:1644,y:-1503},
-    C1:{x:3431,y:-1819},C1a:{x:2239,y:-1495},C1b:{x:3475,y:-1510},C2:{x:395,y:-254},C2a:{x:4191,y:-1462},C2b:{x:4025,y:-229},
-    D4:{x:-1822,y:1608},D4a:{x:-1540,y:390},D4b:{x:-1450,y:1708},
-    F2:{x:3952,y:1660},F2a:{x:4052,y:415},F2b:{x:4113,y:1705},
-    G3:{x:-211,y:3926}, G3a:{x:-1400,y:4172},G3b:{x:-179,y:4126},G3b:{x:-209,y:3926},G4:{x:-1821,y:3569},G4a:{x:-1423,y:2320},G4b:{x:-1423,y:3597},
-    H3:{x:1662,y:3920},H3a:{x:450,y:4120},H3b:{x:1711,y:4171},I2a:{x:4125,y:2347},
-    I2:{x:3924,y:3578},I2a:{x:3924,y:3578},I2b:{x:4130,y:3590},I3:{x:3546,y:3900},I3a:{x:2345,y:4159},I3b:{x:3573,y:4182}
+    A1:{x:-244,y:-1816}, A1a:{x:-1408,y:-1604},A1b:{x:-214,y:-1444},A4:{x:-1812,y:-375},A4a:{x:-1451,y:-1582},A4b:{x:-1564,y:-380},
+    B1:{x:1586,y:-1827},B1a:{x:382,y:-1440},B1b:{x:1628,y:-1444},
+    C1:{x:3655,y:-1830},C1x:{x:2414,y:-1824},C1a:{x:2160,y:-1440},C1b:{x:3698,y:-1315},C2:{x:395,y:-109},C2a:{x:4191,y:-1309},C2b:{x:4087,y:-97},
+    D4:{x:-1822,y:1723},D4a:{x:-1509,y:507},D4b:{x:-1500,y:1729},
+    F2:{x:3905,y:1740},F2a:{x:4124,y:513},F2b:{x:4113,y:1742},
+    G3:{x:-211,y:3926}, G3a:{x:-1400,y:4172},G3b:{x:-162,y:4126},G3b:{x:-209,y:3926},G4:{x:-1675,y:3569},G4a:{x:-1479,y:2371},G4b:{x:-1454,y:3597},
+    H3:{x:1592,y:3920},H3a:{x:384,y:4109},H3b:{x:1630,y:4166},I2a:{x:4125,y:2339},
+    I2:{x:3924,y:3554},I2a:{x:4125,y:2339},I2b:{x:4001,y:3572},I3:{x:3400,y:3889},I3a:{x:2212,y:4136},I3b:{x:3451,y:4161}
 };
 
 var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
@@ -76,7 +76,7 @@ var AnimalXYPositions = {  // TODO - pozice zvirat abych je mohl skryvat - posou
     G1:{x:-864,y:2816,z:-216},G5:{x:-1341,y:3064,z:-226},H1:{x:1171,y:2783,z:-218},H4:{x:854,y:3257,z:-211}, 
     I1:{x:3241,y:2799,z:-254},I3:{x:3251,y:3290,z:-220}
 };
-AnimalHiddenZ = 0; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
+AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 PlotShownZ = -222;  // vyska plotu ukazaneho
 
@@ -109,7 +109,7 @@ var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto d
 var IsPauza = false; // jestli jej prave ted pauza mezi dvojicemi ctvercu v treningu
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 03-14"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena 03-16"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
