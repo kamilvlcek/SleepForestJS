@@ -5,7 +5,7 @@ var TXT_SEKVENCE = 2; // cislo zvirete v sekvenci
 var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
-
+var SHAPE_ZAMER = 10;     // zamerovaci krouzek 
 
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
 var AnimalNames= {  // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
@@ -72,13 +72,14 @@ var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tom
 var AnimalXYPositions = {  // TODO - pozice zvirat abych je mohl skryvat - posouvat a zase zobrazovat
     A3:{x:-866,y:-835,z:-214},A5:{x:-1353,y:-1071,z:-212}, B2:{x:1351,y:-1027,z:-206}, B6:{x:890,y:-1276,z:-219},
     C2:{x:3362,y:-1060,z:-255},C5:{x:2738,y:-1053,z:-212}, D3:{x:-848,y:1241,z:-212},D6:{x:-1184,y:760,z:-196},
-    E4:{x:868,y:1250,z:-210},E6:{x:862,y:786,z:-199},F2:{x:3393,y:1007,z:-218},F4:{x:2764,y:1016,z:-260},
+    E4:{x:868,y:1250,z:-210},E6:{x:862,y:786,z:-199},F2:{x:3391,y:1014,z:-218},F4:{x:2932,y:1249,z:-208},
     G1:{x:-864,y:2816,z:-216},G5:{x:-1341,y:3064,z:-226},H1:{x:1171,y:2783,z:-218},H4:{x:854,y:3257,z:-211}, 
     I1:{x:3241,y:2799,z:-254},I3:{x:3251,y:3290,z:-220}
 };
-AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
-PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
-PlotShownZ = -222;  // vyska plotu ukazaneho
+var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
+var PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
+var PlotShownZ = -222;  // vyska plotu ukazaneho
+
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -93,6 +94,7 @@ var AnimalName = 'Animal'; // zacatek jmena kazdeho zvirete
 var iPhase = 0;   // aktualni cislo faze 
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi 
 var ActiveAimName = 'AimE4'; // jmeno aktualniho aktivniho cile  - AimName+SquareName+AimNo
+var ActiveAimNameText = ""; // jmeno aktualniho zvirate, napriklad KOCKU
 var ActiveTeepee = 'E4'; // oznaceni aktualniho ctverce k navigaci
 var AnimalPicturesHandles = {}; // pole handelu obrazku zvirat - jestli byla uz pouzita textura nebo ne 
 var AnimalHandleLast = 0; // posledni prirazeny handle obrazku v  AnimalPicturesUsed
@@ -107,9 +109,10 @@ var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na z
 var SquarePairsErrors = {}; // pole poctu chyb v kazde treningove dvojici ctvercu. V jejim poslednim vyskytu
 var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto dvojici ctvercu opakovat
 var IsPauza = false; // jestli jej prave ted pauza mezi dvojicemi ctvercu v treningu
+var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 03-16"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena 04-06"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -126,9 +129,11 @@ function run() {
         text.create(TXT_CHYBPOCET, 850, 10, 255,0,0, 4, ""); // pocet chyb
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 150, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
+        Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
         ActivateSquares(iPhase); //    
         ActivateAnimal(iPhase,iSequence);
+        
 	}
 	if (key.pressed("g")){
 		preference.get(ActiveAimName).setVisible(true);
@@ -149,8 +154,18 @@ function run() {
       SkryjNapisy(false);
       IsPauza = false;
 	}
+  if (!Ukazal && key.pressed("space")){   // ukazovani smerem na cil v testu
+      Ukazal = true;
+      experiment.enablePlayerMovement(true); // povolim zase chuzi
+      experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
+      TXT_UKOL_Last = "Najdi "+ActiveAimNameText;
+      text.modify(TXT_UKOL,TXT_UKOL_Last);
+      
+  }
+  
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
 	if (IsInAim=="" && preference.get(ActiveAimName).entered()){
+      // vstup do ciloveho mista
       debug.log("entered Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim entrance:"+ActiveAimName);
       IsInAim = ActiveAimName;  // napriklad 'AimE4'
@@ -174,6 +189,7 @@ function run() {
 	}
 	
 	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left()){
+      // odejiti z ciloveho mista
       debug.log("left Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
       IsInAim = "";       
@@ -191,6 +207,7 @@ function run() {
   	  ActivateAnimal(iPhase,iSequence); 
       
 	}
+   // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
     if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered()){
       // vstup do chybneho mista
@@ -287,9 +304,19 @@ function ActivateAnimal(iPhase,iSequence){
      debug.log('ActiveAimName: '+ActiveAimName);
      experiment.logToTrackLog("Aim search:"+ActiveAimName); 
      preference.get(ActiveAimName).setActive(true);
+     preference.get(ActiveAimName).beepOff(true);     // nema delat zvuk samo osobe
+     ActiveAimNameText = AnimalNames[SquareName+AimNo16]; // jmeno zvirete kam navigovat, nepriklad KOCKU
      
      // OBRAZEK A TEXT KAM NAVIGOVAT
-     TXT_UKOL_Last = "Najdi "+AnimalNames[SquareName+AimNo16];
+     if(DoTest) { // v testu ma nejdriv ukazat na cil
+        TXT_UKOL_Last = "Ukaz na "+AnimalNames[SquareName+AimNo16];
+        Ukazal = false;
+        experiment.enablePlayerMovement(false); // zakazu chuzi
+        experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
+        debug.log(TXT_UKOL_Last);         
+     } else {
+        TXT_UKOL_Last = "Najdi "+AnimalNames[SquareName+AimNo16];
+     }        
      text.modify(TXT_UKOL,TXT_UKOL_Last);    
      if(AnimalPicturesHandles[SquareName+AimNo16]){
          experiment.modifyScreenShape(AnimalPicturesHandles[SquareName+AimNo16], true);     // ukaze jiz drive aktivovany obrazek zvirete
@@ -327,9 +354,7 @@ function ActivateAnimal(iPhase,iSequence){
        //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
        preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
        preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-     }      
-     
-      
+     }     
 }
 
 function toInt(n){ // prevede float to int
@@ -468,3 +493,30 @@ function SkryjNapisy(skryj){
    }
 }
 
+function Zamerovac(){
+  // zamerovaci kruh - 21.4.2017
+   var ScreenX = experiment.getScreenX(); // 1680;//
+   var ShapeSize = new Array;
+    ShapeSize[640]=76; 
+    ShapeSize[800]=95;      
+    ShapeSize[1024]=121;
+    ShapeSize[1264]=140;
+    ShapeSize[1440]=160; //1440 x 900 
+    ShapeSize[1680]=200;
+    ShapeSize[1600]=190; 
+   var TXT_Krizek = new Array; // souradnice krizku
+    TXT_Krizek[640]=[320,190]; 
+    TXT_Krizek[800]=[400,285]; 
+    TXT_Krizek[1024]=[512,384]; // 1024 * 768  - krizek je presne veprostred
+    TXT_Krizek[1264]=[600,430]; // 1024 * 768  - krizek je presne veprostred
+    TXT_Krizek[1600]=[800,570]; //
+    TXT_Krizek[1680]=[800,525]; // 1680 x 1050    
+
+   size = ShapeSize[ScreenX]*4;
+   x = Math.floor(TXT_Krizek[ScreenX][0]-size/2.1);
+   y = Math.floor(TXT_Krizek[ScreenX][1]-size/2.2);
+   R=0; G=0;  B=0;
+   experiment.addScreenShape(SHAPE_ZAMER, x, y, R, G,B, size,size,2,true); //cerny kruh
+   debug.log("zamerovaci kruh: ["+x+";"+y+"],"+size);
+   experiment.modifyScreenShape(SHAPE_ZAMER, false);
+}
