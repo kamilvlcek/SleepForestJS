@@ -392,7 +392,7 @@ function contains(arr, obj) {
 function CtverecJmeno(){
     // vraci jmeno aktualniho ctverce A-I
      if (DoTest){
-        var SquareName = TestSequence[iPhase][1]; // jmeno ctverce do ktereho je treba dojit
+        var SquareName = TestSequence[iPhase][ TestSequence[iPhase][3] ]; // jmeno ctverce do ktereho je treba dojit
      } else { 
         var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile  
         var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  //
@@ -456,7 +456,7 @@ function ZvirataSchovej(ukaz){
 }
 function PresunHrace(iiPhase){
      if(DoTest){
-        SquareName = TestSequence[iiPhase][0]; // nechci jmeno aktualniho ciloveho ctverce, ale startovniho
+        SquareName = TestSequence[iiPhase][ 1-TestSequence[iiPhase][3] ]; // nechci jmeno aktualniho ciloveho ctverce, ale startovniho
      } else {
         SquareName = CtverecJmeno();
      }
