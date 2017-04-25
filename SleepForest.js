@@ -5,6 +5,7 @@ var TXT_SEKVENCE = 2; // cislo zvirete v sekvenci
 var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
+var TXT_INSTRUKCE_MALE = 7; // instrukce uprostred obrazovky
 var SHAPE_ZAMER = 10;     // zamerovaci krouzek 
 
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
@@ -79,7 +80,7 @@ var AnimalXYPositions = {  // TODO - pozice zvirat abych je mohl skryvat - posou
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 var PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -222;  // vyska plotu ukazaneho
-
+var TestCas = 120; // kolik vterin ma hrac na nalezeni cile v testu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -105,7 +106,8 @@ var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci
 var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, nebo '' pokud v zadnem cili
  // blbne funkce left
-var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat 
+var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat
+var TestEntrances = 0; // kolik uspesnych vstupu co cile v testu 
 var SquarePairsErrors = {}; // pole poctu chyb v kazde treningove dvojici ctvercu. V jejim poslednim vyskytu
 var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto dvojici ctvercu opakovat
 var IsPauza = false; // jestli jej prave ted pauza mezi dvojicemi ctvercu v treningu
@@ -129,6 +131,7 @@ function run() {
         text.create(TXT_CHYBPOCET, 850, 10, 255,0,0, 4, ""); // pocet chyb
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 150, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
+        text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
         ActivateSquares(iPhase); //    
@@ -147,11 +150,19 @@ function run() {
         debug.log('left: ANY manually');
     }
 	if (IsPauza && key.pressed("space")){   // skryje instrukci
-		  text.modify(TXT_INSTRUKCE,"");
-      experiment.setPlayerRotationVertical(0);  // subjekt se diva nahoru do nebe            
-      experiment.enablePlayerRotation(true); // zakazu i otaceni na dobu pauzy
-      experiment.enablePlayerMovement(true); // zakazu chuzi na dobu pauzy
-      SkryjNapisy(false);
+	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu 
+        text.modify(TXT_INSTRUKCE,"");
+        experiment.setPlayerRotationVertical(0);  // subjekt se diva nahoru do nebe            
+        experiment.enablePlayerRotation(true); // zakazu i otaceni na dobu pauzy
+        experiment.enablePlayerMovement(true); // zakazu chuzi na dobu pauzy
+        SkryjNapisy(false);
+      } else { // test - pauza po uplynuti limit pro nalezeni cile
+         text.modify(TXT_INSTRUKCE_MALE,"");
+         experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
+         experiment.enablePlayerMovement(true); // povolim chuzi pro dalsi trial  
+         NextTrial();         
+         ActivateAnimal(iPhase,iSequence);
+      }
       IsPauza = false;
 	}
   if (!Ukazal && key.pressed("space")){   // ukazovani smerem na cil v testu
@@ -160,7 +171,8 @@ function run() {
       experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
       TXT_UKOL_Last = "Najdi "+ActiveAimNameText;
       text.modify(TXT_UKOL,TXT_UKOL_Last);
-      
+      timer.set("testlimit_"+iPhase,TestCas); // limit na nalezeni zvirete
+      debug.log("timer: testlimit_"+iPhase);
   }
   
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
@@ -171,8 +183,7 @@ function run() {
       IsInAim = ActiveAimName;  // napriklad 'AimE4'
       // vstup do ciloveho mista
       TXT_UKOL_Last = "VYBORNE !"; 
-      text.modify(TXT_UKOL,TXT_UKOL_Last);
-        
+      text.modify(TXT_UKOL,TXT_UKOL_Last);        
            
       preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
       experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
@@ -184,6 +195,7 @@ function run() {
         AimEntrances[AimNo14()] = AimEntrances[AimNo14()] + 1; // zvysim pocet vstupu do mista 
         debug.log("vstup cislo "+AimEntrances[AimNo14()]);
       } else {
+        TestEntrances += 1;
         ZvirataSchovej(true); //ukaze aktivni zvire     
       }
 	}
@@ -192,20 +204,9 @@ function run() {
       // odejiti z ciloveho mista
       debug.log("left Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
-      IsInAim = "";       
-      iSequence += 1;
-      var delkasekvence = DoTest?  1 : AnimalSequence[AnimalSequenceIndex(iPhase)].length;
-      if(iSequence>=delkasekvence) {
-        // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
-        // v testu jdu vzdy na dalsi fazi
-        iPhase += 1;        
-        ActivateSquares(iPhase);
-        iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
-      }
-      text.modify(TXT_SEKVENCE,DoTest ? iPhase : iSequence);
-      experiment.logToTrackLog("Entrances:" + (DoTest ? iPhase : iPhase + "/" + iSequence) );         
-  	  ActivateAnimal(iPhase,iSequence); 
-      
+      IsInAim = "";
+      NextTrial();        
+      ActivateAnimal(iPhase,iSequence);      
 	}
    // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
@@ -240,8 +241,24 @@ function run() {
 }
 function timerTask(name) {	
 	if (name == "novectverce"){ 
-		text.modify(TXT_INSTRUKCE,"");
-	} 
+		  text.modify(TXT_INSTRUKCE,"");
+	} else if (name=="testlimit_"+iPhase){  // bude true, jen pokud dobehnuty timer odpovida aktivni fazi
+      debug.log("Aim not found: "+ActiveAimName + ", iPhase: "+iPhase);
+      experiment.logToTrackLog("Aim not found:"+ActiveAimName + ", iPhase: "+iPhase);
+      TXT_UKOL_Last = "NEPOVEDLO SE VAM NAJIT CIL V CASOVEM LIMITU"; 
+      text.modify(TXT_INSTRUKCE_MALE,TXT_UKOL_Last);  
+      //preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
+      // nejaky zvuk prehrat, ale z jakeho mista? - mit znacku a tu presunout k hracovi?        
+      
+      IsPauza = true; // stisknete mezernik pro pokracovani pro pokracovani 
+      experiment.enablePlayerMovement(false); // zakazu chuzi na dobu pauzy 
+      
+      // tohle je jen kopie z VSTUP A VYSTUP DO/Z AKTIVNIHO CILE 
+      preference.get(ActiveAimName).setActive(false);
+      for(iaim = 0; iaim < InactiveNames.length; iaim++){  // deaktivuju avoidance mista
+        preference.get(InactiveNames[iaim]).setActive(false);
+      }
+ } 
 } 
 function ActivateSquares(iPhase){
     // iPhase je cislo uz nove faze, inkrementovano predtim
@@ -326,7 +343,7 @@ function ActivateAnimal(iPhase,iSequence){
          AnimalPicturesHandles[SquareName+AimNo16] =   AnimalHandleLast;  // dynamicky postupne prirazuju obrazku handle
      }
      ActiveTeepee = SquareName+AimNo16;    // napriklad 'E4'
-     if(IsPauza) {
+     if(IsPauza && !DoTest) {
          SkryjNapisy(true);
      }
      
@@ -492,7 +509,20 @@ function SkryjNapisy(skryj){
       text.modify(TXT_UKOL,TXT_UKOL_Last); // obnovim drive skryte
    }
 }
-
+function NextTrial(){ 
+    // zvysi cislo iSequence a iPhase
+    iSequence += 1;
+    var delkasekvence = DoTest?  1 : AnimalSequence[AnimalSequenceIndex(iPhase)].length;
+    if(iSequence>=delkasekvence) {
+      // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
+      // v testu jdu vzdy na dalsi fazi
+      iPhase += 1;        
+      ActivateSquares(iPhase);
+      iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
+    }
+    text.modify(TXT_SEKVENCE,DoTest ? iPhase : iSequence);
+    experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );         
+}
 function Zamerovac(){
   // zamerovaci kruh - 21.4.2017
    var ScreenX = experiment.getScreenX(); // 1680;//
