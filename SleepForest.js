@@ -130,7 +130,7 @@ function run() {
         text.create(TXT_SEKVENCE, 700, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
         text.create(TXT_CHYBPOCET, 850, 10, 255,0,0, 4, ""); // pocet chyb
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
-        text.create(TXT_INSTRUKCE, 150, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
+        text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
@@ -168,11 +168,14 @@ function run() {
   if (!Ukazal && key.pressed("space")){   // ukazovani smerem na cil v testu
       Ukazal = true;
       experiment.enablePlayerMovement(true); // povolim zase chuzi
-      experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
+      //experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
+      text.modify(SHAPE_ZAMER,"");
       TXT_UKOL_Last = "Najdi "+ActiveAimNameText;
       text.modify(TXT_UKOL,TXT_UKOL_Last);
+      debug.log(TXT_UKOL_Last);  
+      experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], true);    // radsi obrazek znovu zobrazim, nekdy se sam schova
       timer.set("testlimit_"+iPhase,TestCas); // limit na nalezeni zvirete
-      debug.log("timer: testlimit_"+iPhase);
+      debug.log("timer: testlimit_"+iPhase + " "+TestCas+"s");
   }
   
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
@@ -327,13 +330,14 @@ function ActivateAnimal(iPhase,iSequence){
      // OBRAZEK A TEXT KAM NAVIGOVAT
      if(DoTest) { // v testu ma nejdriv ukazat na cil
         TXT_UKOL_Last = "Ukaz na "+AnimalNames[SquareName+AimNo16];
-        Ukazal = false;
-        experiment.enablePlayerMovement(false); // zakazu chuzi
-        experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
-        debug.log(TXT_UKOL_Last);         
+        Ukazal = false;          
+        experiment.enablePlayerMovement(false); // zakazu chuzi 
+        //experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
+        text.modify(SHAPE_ZAMER,"+");  
      } else {
         TXT_UKOL_Last = "Najdi "+AnimalNames[SquareName+AimNo16];
-     }        
+     }
+     debug.log(iPhase + " " + TXT_UKOL_Last);          
      text.modify(TXT_UKOL,TXT_UKOL_Last);    
      if(AnimalPicturesHandles[SquareName+AimNo16]){
          experiment.modifyScreenShape(AnimalPicturesHandles[SquareName+AimNo16], true);     // ukaze jiz drive aktivovany obrazek zvirete
@@ -346,7 +350,6 @@ function ActivateAnimal(iPhase,iSequence){
      if(IsPauza && !DoTest) {
          SkryjNapisy(true);
      }
-     
      
      // AVOIDANCE MISTA
      InactiveNames = [];
@@ -371,7 +374,7 @@ function ActivateAnimal(iPhase,iSequence){
        //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
        preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
        preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-     }     
+     }  
 }
 
 function toInt(n){ // prevede float to int
@@ -446,7 +449,7 @@ function ZvirataSchovej(ukaz){
           var ZvireZmiz = AnimalName + key; // cele jmeno zvirete napr AnimalA2
           var Pozice = AnimalXYPositions[key];
           mark.get(ZvireZmiz).setLocation([Pozice.x,Pozice.y, AnimalHiddenZ]); // -400 bude pod podlahou, normalni je z
-          debug.log("schovano: "+ZvireZmiz + " na pozici "+[Pozice.x,Pozice.y,Pozice.z]) ;
+          //debug.log("schovano: "+ZvireZmiz + " na pozici "+[Pozice.x,Pozice.y,Pozice.z]) ;
       } 
      } else {
         var Pozice = AnimalXYPositions[ActiveTeepee];
@@ -538,15 +541,19 @@ function Zamerovac(){
     TXT_Krizek[640]=[320,190]; 
     TXT_Krizek[800]=[400,285]; 
     TXT_Krizek[1024]=[512,384]; // 1024 * 768  - krizek je presne veprostred
-    TXT_Krizek[1264]=[600,430]; // 1024 * 768  - krizek je presne veprostred
+    TXT_Krizek[1264]=[600,320]; // 1264 * 800  - krizek je presne veprostred
     TXT_Krizek[1600]=[800,570]; //
     TXT_Krizek[1680]=[800,525]; // 1680 x 1050    
 
    size = ShapeSize[ScreenX]*4;
-   x = Math.floor(TXT_Krizek[ScreenX][0]-size/2.1);
-   y = Math.floor(TXT_Krizek[ScreenX][1]-size/2.2);
+   x = Math.floor(TXT_Krizek[ScreenX][0]); //-size/2.1
+   y = Math.floor(TXT_Krizek[ScreenX][1]); // -size/2.2
    R=0; G=0;  B=0;
+   /*
    experiment.addScreenShape(SHAPE_ZAMER, x, y, R, G,B, size,size,2,true); //cerny kruh
-   debug.log("zamerovaci kruh: ["+x+";"+y+"],"+size);
    experiment.modifyScreenShape(SHAPE_ZAMER, false);
+   debug.log("zamerovaci kruh: ["+x+";"+y+"],"+size);
+   */
+   text.create(SHAPE_ZAMER, x, y, 0, 0, 255, 10, ""); // ukazovaci krizek - modra
+   debug.log("zamerovaci krizek: ["+x+";"+y+"]"); // protoze kruh se v prubehu testu prestane vykreslovat, nevim vubec proc 
 }
