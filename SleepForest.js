@@ -533,7 +533,7 @@ function Zamerovac(){
     ShapeSize[640]=76; 
     ShapeSize[800]=95;      
     ShapeSize[1024]=121;
-    ShapeSize[1264]=140;
+    ShapeSize[1280]=140;
     ShapeSize[1440]=160; //1440 x 900 
     ShapeSize[1680]=200;
     ShapeSize[1600]=190; 
@@ -541,10 +541,14 @@ function Zamerovac(){
     TXT_Krizek[640]=[320,190]; 
     TXT_Krizek[800]=[400,285]; 
     TXT_Krizek[1024]=[512,384]; // 1024 * 768  - krizek je presne veprostred
-    TXT_Krizek[1264]=[600,320]; // 1264 * 800  - krizek je presne veprostred
+    TXT_Krizek[1280]=[600,320]; // 1264 * 800  - krizek je presne veprostred
     TXT_Krizek[1600]=[800,570]; //
     TXT_Krizek[1680]=[800,525]; // 1680 x 1050    
-
+   if(ShapeSize[ScreenX]== undefined || TXT_Krizek[ScreenX]==undefined){
+        text.modify(TXT_INSTRUKCE,"NEZNAMY ROZMER OBRAZOVKY");
+        debug.log('NEZNAMY ROZMER OBRAZOVKY ' + ScreenX);
+        experiment.setStop(); 
+   }
    size = ShapeSize[ScreenX]*4;
    x = Math.floor(TXT_Krizek[ScreenX][0]); //-size/2.1
    y = Math.floor(TXT_Krizek[ScreenX][1]); // -size/2.2
