@@ -279,7 +279,7 @@ function ActivateSquares(iPhase){
      }  else {    // ****************** TRENING     ******************
        if(iPhase>0){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
-           PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
+          PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
        }
        if(iPhase>=SquarePairs.length) {
           SquarePairsAdd();       // pokud jsou nejake dvojice ctvercu, kde bylo moc chyb, pridam je jeste na konec sekvence
@@ -295,8 +295,15 @@ function ActivateSquares(iPhase){
          PlotPosun(iPhase,0); // skryje plot v teto fazi  
          AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
          PresunHrace(iPhase);
-         SetSquarePairErrors(iPhase,0);                
-       }      
+         SetSquarePairErrors(iPhase,0);
+       } 
+       if(iPhase>=SquarePairs.length/2){  // po prvni pulce dvoji ctvercu ploty zmizi
+          PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
+          debug.log("Ploty neviditelne");
+       }  else {
+          PlotyZmiz(false); 
+          debug.log("Ploty viditelne");   
+       }  
        
        // pauza pred novou dvojici ctvercu 
          text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU");
@@ -441,6 +448,19 @@ function PlotPosun(iiPhase,ukaz){
           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222  
        } 
     }
+}
+function PlotyZmiz(skryj){
+    // udela ploty neviditelne, nebo viditelne. 
+    for(var key in PlotyPozice){
+        var PlotZmiz = PlotName + key;
+        var CtverecPozice = PlotyPozice[key];
+        mark.get(PlotZmiz).setVisible(!skryj); // viditelne nebo ne, podle ukaz 
+    } 
+    for(var key in PlotyPozice2){
+       var PlotZmiz = PlotName + key;
+       var CtverecPozice = PlotyPozice2[key];
+       mark.get(PlotZmiz).setVisible(!skryj);
+    } 
 }
 function ZvirataSchovej(ukaz){
   // schova vsechna zvirata, nebo ukaze jen to aktivni pokud ukaz = 1
