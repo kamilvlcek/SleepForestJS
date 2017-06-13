@@ -114,7 +114,7 @@ var IsPauza = false; // jestli jej prave ted pauza mezi dvojicemi ctvercu v tren
 var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
 
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 04-06"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena 04-06 nostatues"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 
 function run() {
@@ -126,9 +126,9 @@ function run() {
 		
 		//platform.get("plosina").doRotateTime(10000,5,-1);
         text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta  
-        text.create(TXT_CTVEREC, 600, 10, 0, 0,255, 3, ""); // cislo ctverce    
-        text.create(TXT_SEKVENCE, 700, 10, 0, 255,0, 4, ""); // cislo zvirete v sekvenci
-        text.create(TXT_CHYBPOCET, 850, 10, 255,0,0, 4, ""); // pocet chyb
+        text.create(TXT_CTVEREC, 700, 10, 0, 0,255, 3, ""); // cislo ctverce - KOLO     
+        text.create(TXT_SEKVENCE, 700, 60, 0, 255,0, 3, ""); // cislo zvirete v sekvenci   - NALEZENO
+        text.create(TXT_CHYBPOCET, 700, 110, 255,0,0, 3, ""); // pocet chyb - CHYB
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
@@ -223,7 +223,7 @@ function run() {
       preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
       if (DoTest || AimEntrances[AimNo14()] > 0){       
         ErrorsNumber +=1;  // chyby pocitam v testu a po prvni navsteve v treningu
-        text.modify(TXT_CHYBPOCET,ErrorsNumber);
+        text.modify(TXT_CHYBPOCET,"CHYBY: " + ErrorsNumber);
         debug.log("Pocet chyb: "+ErrorsNumber);
         if(!DoTest) SetSquarePairErrors(iPhase,1); // zvysim pocet chyb ve dvojici ctvercu o 1        
       }
@@ -313,7 +313,7 @@ function ActivateSquares(iPhase){
          IsPauza = true;
        //timer.set("novectverce",10); // za jak dlouho tenhle napis sam zmizi
      }
-     text.modify(TXT_CTVEREC,iPhase+1); // modre cislo    
+     text.modify(TXT_CTVEREC,"KOLO: "+(iPhase+1) ); // modre cislo    
 }
 function ActivateAnimal(iPhase,iSequence){
     // vola se po aktivaci paru ctvercu a pak po nalezeni kazdeho zvirete
@@ -321,11 +321,11 @@ function ActivateAnimal(iPhase,iSequence){
      // CILOVE MISTO
      var SquareName = CtverecJmeno();  //  jmeno aktualniho ctverce ABC DEF GH nebo I
      if (DoTest){
-        var AimNo16 =   AnimalPositions[SquareName][TestSequence[iPhase][2]];  // cislo cile odpovidajici cislu stanu 1-6
+        var AimNo16 =   AnimalPositions[SquareName][TestSequence[iPhase][2]];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
         PresunHrace(iPhase);
      }  else {
-        var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
-        var AimNo16 =   AnimalPositions[SquareName][AimNo01];  // cislo cile odpovidajici cislu stanu 1-6
+        var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile v ramci ctverce, zbytek po deleni 10ti , 0 nebo 1
+        var AimNo16 = AnimalPositions[SquareName][AimNo01];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
      }
      ActiveAimName = AimName+SquareName+AimNo16;
      debug.log('ActiveAimName: '+ActiveAimName);
@@ -404,8 +404,8 @@ function CtverecJmeno(){
      if (DoTest){
         var SquareName = TestSequence[iPhase][ TestSequence[iPhase][3] ]; // jmeno ctverce do ktereho je treba dojit
      } else { 
-        var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile  
-        var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  //
+        var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile v ramci ctverce  
+        var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  // SquarePairs se sekvence dvojic ctvercu   
      }
      return SquareName;
 }   
@@ -543,7 +543,7 @@ function NextTrial(){
       ActivateSquares(iPhase);
       iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
     }
-    text.modify(TXT_SEKVENCE,DoTest ? iPhase : iSequence);
+    text.modify(TXT_SEKVENCE,"NALEZENO:" + (DoTest ? iPhase : iSequence));
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );         
 }
 function Zamerovac(){
