@@ -297,7 +297,7 @@ function ActivateSquares(iPhase){
          PresunHrace(iPhase);
          SetSquarePairErrors(iPhase,0);
        } 
-       if(iPhase>=SquarePairs.length/2){  // po prvni pulce dvoji ctvercu ploty zmizi
+       if(iPhase>=8){  // po osmi dvojicich ctvercu ploty zmizi
           PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
           debug.log("Ploty neviditelne");
        }  else {
@@ -553,6 +553,7 @@ function Zamerovac(){
     ShapeSize[640]=76; 
     ShapeSize[800]=95;      
     ShapeSize[1024]=121;
+    ShapeSize[1264]=140;
     ShapeSize[1280]=140;
     ShapeSize[1440]=160; //1440 x 900 
     ShapeSize[1680]=200;
@@ -561,6 +562,7 @@ function Zamerovac(){
     TXT_Krizek[640]=[320,190]; 
     TXT_Krizek[800]=[400,285]; 
     TXT_Krizek[1024]=[512,384]; // 1024 * 768  - krizek je presne veprostred
+    TXT_Krizek[1264]=[600,320]; // 1264 * 800  - krizek je presne veprostred
     TXT_Krizek[1280]=[600,320]; // 1264 * 800  - krizek je presne veprostred
     TXT_Krizek[1600]=[800,570]; //
     TXT_Krizek[1680]=[800,525]; // 1680 x 1050    
