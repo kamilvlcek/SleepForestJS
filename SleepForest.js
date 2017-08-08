@@ -116,7 +116,7 @@ var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je
 var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skrytu plotu a pocatecni exploraci
 var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
 var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
-
+var CasZkoumejStart = 0; //  date object zacatku pocitani
 function init() {	
 	experiment.setMap("TEST-SleepForest Alena 27_7 FINAL"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
@@ -137,7 +137,7 @@ function run() {
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
-        text.create(TXT_SEKUNDY, ScreenX - 100, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
+        text.create(TXT_SEKUNDY, ScreenX - 150, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
         ActivateSquares(iPhase); //    
@@ -166,7 +166,8 @@ function run() {
             CasZkoumejZbyva = CasZkoumej; // zacnu odecita cas 
             timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu 
             text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
-            text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu 
+            text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
+            CasZkoumejStart = new Date(); 
         } else {
             SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
         }
@@ -281,7 +282,8 @@ function timerTask(name) {
       debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
       SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL                                   
     } else if(name=='CasZkoumejZbyva'){    // casovac pouze na odpocitavani do konce, kazdou vterinu
-      CasZkoumejZbyva = CasZkoumejZbyva - 1;
+      CasZkoumejTed = new Date(); // aktualni datetime
+      CasZkoumejZbyva = Math.round(CasZkoumej - (CasZkoumejTed-CasZkoumejStart)/1000);  // odectu pocet vyprsenych vterin 
       if(CasZkoumejZbyva>0) {
         timer.set("CasZkoumejZbyva",1); // nastavim casovac znova
         text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
@@ -359,7 +361,7 @@ function ActivateAnimal(iPhase,iSequence){
         text.modify(SHAPE_ZAMER,"+");  
      } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
-        TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    // TODO tenhle napis se nezobrazi u druhe dvojice ctvercu
+        TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    
         ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);
         // casovac nastavim az po uplynuti pauzy (na zacatku nove dvojice ctvercu v treningu)
      } else {
@@ -599,7 +601,6 @@ function AnimalSequenceIndex(iiPhase){
 
 function SkryjNapisy(skryj){
    // behem pauzy skryje obrazek zvirete na obrazovce a text TXT_UKOL
-   // TODO - tady neni definovano handle - protoze se to provede pred ActivateGoal 
    ShowAnimalPicture(ActiveTeepee, skryj ? false : true ); // ukaze obrazek ciloveho zvirete
    if (skryj) {
       text.modify(TXT_UKOL,"");   // skryje instrukci, ale nesmaze TXT_UKOL_Last   
