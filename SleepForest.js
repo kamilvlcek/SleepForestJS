@@ -6,6 +6,7 @@ var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
 var TXT_INSTRUKCE_MALE = 7; // instrukce uprostred obrazovky
+var TXT_SEKUNDY = 8; // cas do ukonceni prozkoumavani dvojice ctvercu
 var SHAPE_ZAMER = 10;     // zamerovaci krouzek 
 
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
@@ -113,7 +114,8 @@ var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto d
 var IsPauza = false; // jestli jej prave ted pauza  - mezi dvojicemi ctvercu v treningu nebo po uplynuti limitu pro nalezeni cile v testu
 var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
 var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skrytu plotu a pocatecni exploraci
-var CasZkoumej = 60; // cas na zacatku kazde dvojice ctvercu, kdy se clovek me jen prochazet, bez ukolu
+var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
+var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
 
 function init() {	
 	experiment.setMap("TEST-SleepForest Alena 27_7 FINAL"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
@@ -127,13 +129,15 @@ function run() {
 		experiment.setPlayerSpeed(440);
 		
 		//platform.get("plosina").doRotateTime(10000,5,-1);
+        var ScreenX = experiment.getScreenX();
         text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta  
-        text.create(TXT_CTVEREC, 700, 10, 0, 0,255, 3, ""); // cislo ctverce - KOLO     
-        text.create(TXT_SEKVENCE, 700, 60, 0, 255,0, 3, ""); // cislo zvirete v sekvenci   - NALEZENO
-        text.create(TXT_CHYBPOCET, 700, 110, 255,0,0, 3, ""); // pocet chyb - CHYB
+        text.create(TXT_CTVEREC, ScreenX-500, 10, 0, 0,255, 3, ""); // cislo ctverce - KOLO     
+        text.create(TXT_SEKVENCE, ScreenX-500, 60, 0, 255,0, 3, ""); // cislo zvirete v sekvenci   - NALEZENO
+        text.create(TXT_CHYBPOCET, ScreenX-500, 110, 255,0,0, 3, ""); // pocet chyb - CHYB
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
+        text.create(TXT_SEKUNDY, ScreenX - 100, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
         ActivateSquares(iPhase); //    
@@ -156,14 +160,19 @@ function run() {
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
         experiment.setPlayerRotationVertical(0);  // subjekt se diva zase pred sebe            
         experiment.enablePlayerRotation(true); // povolim otaceni
-        experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy
-        SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
+        experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy        
         if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){  //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
-            timer.set("CasZkoumej",CasZkoumej); // nastavim casovac nez cas volneho zkoumani uplyne
+            timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne
+            CasZkoumejZbyva = CasZkoumej; // zacnu odecita cas 
+            timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu 
+            text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
+            text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu 
+        } else {
+            SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
         }
       } else { // test - pauza po uplynuti limitu pro nalezeni cile
          text.modify(TXT_INSTRUKCE_MALE,""); // skryju napis, ze se nepovedlo najit cil
-         experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
+         ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
          experiment.enablePlayerMovement(true); // povolim chuzi pro dalsi trial  
          NextTrial();         
          ActivateAnimal(iPhase,iSequence);
@@ -177,14 +186,14 @@ function run() {
       text.modify(SHAPE_ZAMER,"");
       TXT_UKOL_Last = "Najdi "+ActiveAimNameText;
       text.modify(TXT_UKOL,TXT_UKOL_Last);
-      debug.log(TXT_UKOL_Last);  
-      experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], true);    // radsi obrazek znovu zobrazim, nekdy se sam schova
+      debug.log(TXT_UKOL_Last);
+      ShowAnimalPicture(ActiveTeepee, true); // radsi obrazek znovu zobrazim, nekdy se sam schova  
       timer.set("testlimit_"+iPhase,TestCas); // limit na nalezeni zvirete
       debug.log("timer: testlimit_"+iPhase + " "+TestCas+"s");
   }
   
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
-	if (IsInAim=="" && preference.get(ActiveAimName).entered()){
+	if (IsInAim=="" && preference.get(ActiveAimName).entered() && CasZkoumejZbyva == 0 ){
       // vstup do ciloveho mista
       debug.log("entered Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim entrance:"+ActiveAimName);
@@ -194,7 +203,7 @@ function run() {
       text.modify(TXT_UKOL,TXT_UKOL_Last);        
            
       preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
-      experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false); // schova obrazek zvirete
+      ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
       preference.get(ActiveAimName).setActive(false);
       for(iaim = 0; iaim < InactiveNames.length; iaim++){  // deaktivuju avoidance mista
         preference.get(InactiveNames[iaim]).setActive(false);
@@ -208,7 +217,7 @@ function run() {
       }
 	}
 	
-	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left()){
+	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left() && CasZkoumejZbyva == 0){
       // odejiti z ciloveho mista
       debug.log("left Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
@@ -218,7 +227,7 @@ function run() {
 	}
    // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
-    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered()){
+    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered() && CasZkoumejZbyva == 0){
       // vstup do chybneho mista
       debug.log("entered Avoid: "+InactiveNames[iaim]);
       experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
@@ -237,7 +246,7 @@ function run() {
     }
   }
   
-  if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() ) {
+  if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() && CasZkoumejZbyva == 0 ) {
       debug.log("left Avoid: "+InactiveEntered);
       experiment.logToTrackLog("Avoid left:"+InactiveEntered);
       IsInAim = "";
@@ -265,13 +274,21 @@ function timerTask(name) {
       for(iaim = 0; iaim < InactiveNames.length; iaim++){  // deaktivuju avoidance mista
         preference.get(InactiveNames[iaim]).setActive(false);
       }
-    } else if(name='CasZkoumej'){ // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu  
+    } else if(name=='CasZkoumej'){ // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu
       ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee 
       TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee]; 
-      ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase);  // aktivuje aktualni cil i ostatni cile jako avoidance   
-      debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu         
-      text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku                                   
-    } 
+      ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance   
+      debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
+      SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL                                   
+    } else if(name=='CasZkoumejZbyva'){    // casovac pouze na odpocitavani do konce, kazdou vterinu
+      CasZkoumejZbyva = CasZkoumejZbyva - 1;
+      if(CasZkoumejZbyva>0) {
+        timer.set("CasZkoumejZbyva",1); // nastavim casovac znova
+        text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
+      } else {
+        text.modify(TXT_SEKUNDY,"");
+      }
+    }
 } 
 function ActivateSquares(iPhase){
     // vola se z NextTrial
@@ -340,13 +357,14 @@ function ActivateAnimal(iPhase,iSequence){
         experiment.enablePlayerMovement(false); // zakazu chuzi 
         //experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
         text.modify(SHAPE_ZAMER,"+");  
-     } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){
+     } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
-        TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";
+        TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    // TODO tenhle napis se nezobrazi u druhe dvojice ctvercu
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);
         // casovac nastavim az po uplynuti pauzy (na zacatku nove dvojice ctvercu v treningu)
      } else {
         TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee];
-        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase);  // aktivuje aktualni cil i ostatni cile jako avoidance
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance
      }
      debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu         
      text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku
@@ -373,47 +391,71 @@ function GetActiveNames () {
      var ActiveN = { ActiveAimName:ActiveAimName, ActiveTeepee:ActiveTeepee};
      return ActiveN;
 }
-function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase){
-     // presunuta cast kodu z ActivateAnimal
-     // aktivuju aktualni cil
-     debug.log('ActiveAimName: '+ActiveAimName);
-     experiment.logToTrackLog("Aim search:"+ActiveAimName); // zapise do logu, ze se zacina hledat dvojice ctvercu 
-     preference.get(ActiveAimName).setActive(true);         // cilova oblast se udela aktivni
-     preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
-     
-     // zobrazim obrazek ciloveho zvirete 
-     if(AnimalPicturesHandles[ActiveTeepee]){
-         experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], true);     // ukaze jiz drive aktivovany obrazek zvirete
+function ShowAnimalPicture(ActiveTeepee, ukaz){
+     // ukaze nebo skryje obrazek ciloveho zvirete - pokud poprve, prida texturu
+     if(ukaz){
+       // zobrazim obrazek ciloveho zvirete 
+       if(AnimalPicturesHandles[ActiveTeepee]){
+           experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], true);     // ukaze jiz drive aktivovany obrazek zvirete
+       } else {
+           AnimalHandleLast += 1;
+           experiment.addScreenShape(AnimalHandleLast, 10, 80, 255, 255, 255, 256, 256, 0, false, AnimalPictures[ActiveTeepee]);
+           AnimalPicturesHandles[ActiveTeepee] =   AnimalHandleLast;  // dynamicky postupne prirazuju obrazku handle
+       }
      } else {
-         AnimalHandleLast += 1;
-         experiment.addScreenShape(AnimalHandleLast, 10, 80, 255, 255, 255, 256, 256, 0, false, AnimalPictures[ActiveTeepee]);
-         AnimalPicturesHandles[ActiveTeepee] =   AnimalHandleLast;  // dynamicky postupne prirazuju obrazku handle
+        // schova obrazek zvirete
+        if(AnimalPicturesHandles[ActiveTeepee]){ // pokud handle neexistuje, tak jsem ho jeste nevytvoril a nemam tedy co schovavat
+            experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false);
+        } 
      }
+}
+function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
+     // presunuta cast kodu z ActivateAnimal
      
-     // AVOIDANCE MISTA
-     InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni
-     var Ctverce = DoTest ? AllSquares : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
-     for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
-        for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
-            //aimn =  AnimalSequence[iPhase][ianimal];            
-            SquareName = Ctverce[isquare];    
-            Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
-            if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
-              //debug.log("nepouzit InactiveName " + Aim); 
-              continue;  // pokud se jedna o aktualni cil nebo uz je v seznamu  InactiveNames              
-            } else {
-              InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance     
-            }         
+     if(aktivuj){ 
+       // aktivuju aktualni cil
+       debug.log('ActiveAimName: '+ActiveAimName);
+       experiment.logToTrackLog("Aim search:"+ActiveAimName); // zapise do logu, ze se zacina hledat dvojice ctvercu 
+       preference.get(ActiveAimName).setActive(true);         // cilova oblast se udela aktivni
+       preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
+       
+       ShowAnimalPicture(ActiveTeepee, true); // ukaze obrazek ciloveho zvirete 
+       
+       // AVOIDANCE MISTA
+       InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni
+       var Ctverce = DoTest ? AllSquares : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
+       for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
+          for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
+              //aimn =  AnimalSequence[iPhase][ianimal];            
+              SquareName = Ctverce[isquare];    
+              Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
+              if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
+                //debug.log("nepouzit InactiveName " + Aim); 
+                continue;  // pokud se jedna o aktualni cil nebo uz je v seznamu  InactiveNames              
+              } else {
+                InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance     
+              }         
+          }               
+       }
+       debug.log("InactiveNames: " + InactiveNames);
+       // ted cely seznam InactiveNames postupne aktivuju
+       for(iaim = 0; iaim < InactiveNames.length; iaim++){
+         Aim = InactiveNames[iaim];
+         //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
+         preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
+         preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+       }           
+     } else { // deaktivuju vsechna mista 
+        var Ctverce = SquarePairs[iPhase];  
+        for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
+          for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
+             SquareName = Ctverce[isquare];    
+             Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
+             preference.get(Aim).setActive(false);   // deaktivuju misto 
+             preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+          }
         }
      }
-     debug.log("InactiveNames: " + InactiveNames);
-     // ted cely seznam InactiveNames postupne aktivuju
-     for(iaim = 0; iaim < InactiveNames.length; iaim++){
-       Aim = InactiveNames[iaim];
-       //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
-       preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
-       preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-     }  
 }
 
 function toInt(n){ // prevede float to int
@@ -558,7 +600,7 @@ function AnimalSequenceIndex(iiPhase){
 function SkryjNapisy(skryj){
    // behem pauzy skryje obrazek zvirete na obrazovce a text TXT_UKOL
    // TODO - tady neni definovano handle - protoze se to provede pred ActivateGoal 
-   experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], skryj ? false : true );
+   ShowAnimalPicture(ActiveTeepee, skryj ? false : true ); // ukaze obrazek ciloveho zvirete
    if (skryj) {
       text.modify(TXT_UKOL,"");   // skryje instrukci, ale nesmaze TXT_UKOL_Last   
    } else {
@@ -575,6 +617,8 @@ function NextTrial(){
       iPhase += 1;        
       ActivateSquares(iPhase);
       iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
+      ErrorsNumber = 0; // vymazu pocet chyb
+      text.modify(TXT_CHYBPOCET,""); // smazu vypis chyb, nez clovek zase nejakou udela
     }
     text.modify(TXT_SEKVENCE,"NALEZENO:" + (DoTest ? iPhase : iSequence));
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );         
