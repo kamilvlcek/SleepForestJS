@@ -160,17 +160,21 @@ function run() {
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
         experiment.setPlayerRotationVertical(0);  // subjekt se diva zase pred sebe            
         experiment.enablePlayerRotation(true); // povolim otaceni
-        experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy        
+        experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy 
         if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){  //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
+            ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee 
+            ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance
+            text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
+            ShowAnimalPicture(ActiveN.ActiveTeepee, false); // skryje obrazek ciloveho zvirete
+            
             timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne
             CasZkoumejZbyva = CasZkoumej; // zacnu odecita cas 
             timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu 
             text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
-            text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
             CasZkoumejStart = new Date(); 
         } else {
             SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
-        }
+        } 
       } else { // test - pauza po uplynuti limitu pro nalezeni cile
          text.modify(TXT_INSTRUKCE_MALE,""); // skryju napis, ze se nepovedlo najit cil
          ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
