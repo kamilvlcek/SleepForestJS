@@ -95,6 +95,7 @@ var AnimalName = 'Animal'; // zacatek jmena kazdeho zvirete
 
 var iPhase = 0;   // aktualni cislo faze 
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi 
+var Nalezenych = 0;  // pocet nalezenych cilu, pokud v testu nenajde cil, nesedi to s iPhase ani iSekvence
 var ActiveAimName = 'AimE4'; // jmeno aktualniho aktivniho cile  - AimName+SquareName+AimNo
 var ActiveAimNameText = ""; // jmeno aktualniho zvirate, napriklad KOCKU
 var ActiveTeepee = 'E4'; // oznaceni aktualniho ctverce k navigaci
@@ -155,6 +156,10 @@ function run() {
         IsInAim = '';
         debug.log('left: ANY manually');
     }
+    if (key.pressed('n')){ // takhle muzu skakat na dalsi 
+        NextTrial(true);    // zvysim cislo faze  
+        ActivateAnimal(iPhase,iSequence);
+    }
 	if (IsPauza && key.pressed("space")){   
 	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku 
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
@@ -168,7 +173,7 @@ function run() {
             ShowAnimalPicture(ActiveN.ActiveTeepee, false); // skryje obrazek ciloveho zvirete
             
             timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne
-            CasZkoumejZbyva = CasZkoumej; // zacnu odecita cas 
+            CasZkoumejZbyva = CasZkoumej; // zacnu odecitat cas 
             timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu 
             text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
             CasZkoumejStart = new Date(); 
@@ -179,7 +184,7 @@ function run() {
          text.modify(TXT_INSTRUKCE_MALE,""); // skryju napis, ze se nepovedlo najit cil
          ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
          experiment.enablePlayerMovement(true); // povolim chuzi pro dalsi trial  
-         NextTrial();         
+         NextTrial(false);  // tady nepricitam Nalezeno       
          ActivateAnimal(iPhase,iSequence);
       }
       IsPauza = false;
@@ -227,7 +232,8 @@ function run() {
       debug.log("left Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
       IsInAim = "";
-      NextTrial();  // vola i ActivateSquares      
+      Nalezenych++; // zvysim pocet nalezenych cilu
+      NextTrial(false);  // vola i ActivateSquares      
       ActivateAnimal(iPhase,iSequence);      
 	}
    // VSTUP DO/Z CHYBNEHO CILE
@@ -363,7 +369,7 @@ function ActivateAnimal(iPhase,iSequence){
         experiment.enablePlayerMovement(false); // zakazu chuzi 
         //experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
         text.modify(SHAPE_ZAMER,"+");  
-     } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni trial v sekvenci
+     } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni opakovani dvojice ctvercu a pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
         TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    
         ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);
@@ -612,10 +618,15 @@ function SkryjNapisy(skryj){
       text.modify(TXT_UKOL,TXT_UKOL_Last); // obnovim drive skryte
    }
 }
-function NextTrial(){ 
-    // zvysi cislo iSequence a iPhase
-    iSequence += 1;
+function NextTrial(nextPhase){
     var delkasekvence = DoTest?  1 : AnimalSequence[AnimalSequenceIndex(iPhase)].length;
+    if(nextPhase) {
+      // zvysi cislo iPhase - 28.8.2017 kvuli rucnimu prechodu na dalsi fazie
+      iSequence += delkasekvence;
+    } else {
+      // zvysi cislo iSequence, pripadne i iPhase, pokud jsem na konci sekvence
+      iSequence += 1;
+    }
     if(iSequence>=delkasekvence) {
       // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
       // v testu jdu vzdy na dalsi fazi
@@ -624,8 +635,9 @@ function NextTrial(){
       iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
       ErrorsNumber = 0; // vymazu pocet chyb
       text.modify(TXT_CHYBPOCET,""); // smazu vypis chyb, nez clovek zase nejakou udela
+      debug.log("Phase: "+iPhase);
     }
-    text.modify(TXT_SEKVENCE,"NALEZENO:" + (DoTest ? iPhase : iSequence));
+    text.modify(TXT_SEKVENCE,"NALEZENO:" + Nalezenych);
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );         
 }
 function Zamerovac(){
