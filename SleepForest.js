@@ -172,7 +172,7 @@ function run() {
             text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
             ShowAnimalPicture(ActiveN.ActiveTeepee, false); // skryje obrazek ciloveho zvirete
             
-            timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne
+            //timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne - 28.8.2017 - nechci mi dva ruzne casovace na to same - muzou merit cas ruzne rychle
             CasZkoumejZbyva = CasZkoumej; // zacnu odecitat cas 
             timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu 
             text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
@@ -285,12 +285,6 @@ function timerTask(name) {
       for(iaim = 0; iaim < InactiveNames.length; iaim++){  // deaktivuju avoidance mista
         preference.get(InactiveNames[iaim]).setActive(false);
       }
-    } else if(name=='CasZkoumej'){ // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu
-      ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee 
-      TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee]; 
-      ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance   
-      debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
-      SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL                                   
     } else if(name=='CasZkoumejZbyva'){    // casovac pouze na odpocitavani do konce, kazdou vterinu
       CasZkoumejTed = new Date(); // aktualni datetime
       CasZkoumejZbyva = Math.round(CasZkoumej - (CasZkoumejTed-CasZkoumejStart)/1000);  // odectu pocet vyprsenych vterin 
@@ -299,6 +293,12 @@ function timerTask(name) {
         text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
       } else {
         text.modify(TXT_SEKUNDY,"");
+        // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu
+        ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee 
+        TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee]; 
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance   
+        debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
+        SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL 
       }
     }
 } 
