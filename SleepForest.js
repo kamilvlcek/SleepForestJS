@@ -119,7 +119,7 @@ var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma 
 var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 27_7 FINAL"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest Alena 27_7 FINAL"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
 }
 
 function run() {
@@ -160,6 +160,9 @@ function run() {
         NextTrial(true);    // zvysim cislo faze  
         ActivateAnimal(iPhase,iSequence);
     }
+    if (key.pressed('k')){ // ukonceni prohledavani, kvuli usetreni casu
+        CasZkoumejStart.setSeconds(CasZkoumejStart.getSeconds() - CasZkoumej);  // posunu zacatek zkoumani v case dozadu  - timestamp je asi v ms
+    }
 	if (IsPauza && key.pressed("space")){   
 	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku 
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
@@ -168,7 +171,7 @@ function run() {
         experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy 
         if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){  //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
             ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee 
-            ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance
+            ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);  // aktivuje aktualni cil i ostatni cile jako avoidance
             text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
             ShowAnimalPicture(ActiveN.ActiveTeepee, false); // skryje obrazek ciloveho zvirete
             
@@ -203,7 +206,7 @@ function run() {
   }
   
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
-	if (IsInAim=="" && preference.get(ActiveAimName).entered() && CasZkoumejZbyva == 0 ){
+	if (IsInAim=="" && preference.get(ActiveAimName).entered() && CasZkoumejZbyva <= 0 ){
       // vstup do ciloveho mista
       debug.log("entered Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim entrance:"+ActiveAimName);
@@ -227,7 +230,7 @@ function run() {
       }
 	}
 	
-	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left() && CasZkoumejZbyva == 0){
+	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left() && CasZkoumejZbyva <= 0){
       // odejiti z ciloveho mista
       debug.log("left Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim left:"+ActiveAimName);
@@ -238,7 +241,7 @@ function run() {
 	}
    // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
-    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered() && CasZkoumejZbyva == 0){
+    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered() && CasZkoumejZbyva <= 0){
       // vstup do chybneho mista
       debug.log("entered Avoid: "+InactiveNames[iaim]);
       experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
@@ -246,7 +249,7 @@ function run() {
       text.modify(TXT_CHYBA,"CHYBA !"); 
       //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
       preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
-      if (DoTest || AimEntrances[AimNo14()] > 0){       
+      if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud je cas na zkoumani, pocitam chyby od zacatku     
         ErrorsNumber +=1;  // chyby pocitam v testu a po prvni navsteve v treningu
         text.modify(TXT_CHYBPOCET,"CHYBY: " + ErrorsNumber);
         debug.log("Pocet chyb: "+ErrorsNumber);
@@ -257,7 +260,7 @@ function run() {
     }
   }
   
-  if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() && CasZkoumejZbyva == 0 ) {
+  if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() && CasZkoumejZbyva <= 0 ) {
       debug.log("left Avoid: "+InactiveEntered);
       experiment.logToTrackLog("Avoid left:"+InactiveEntered);
       IsInAim = "";
@@ -298,7 +301,7 @@ function timerTask(name) {
         TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee]; 
         ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance   
         debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
-        SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL 
+        SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
       }
     }
 } 
@@ -337,13 +340,6 @@ function ActivateSquares(iPhase){
          PresunHrace(iPhase);
          SetSquarePairErrors(iPhase,0);
        } 
-       if(iPhase>=RuznychDvojicCtvercu){  // po osmi dvojicich ctvercu ploty zmizi
-          PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
-          debug.log("Ploty neviditelne");
-       }  else {
-          PlotyZmiz(false); 
-          debug.log("Ploty viditelne");   
-       }  
        
        // pauza pred novou dvojici ctvercu 
        text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU");
@@ -372,7 +368,7 @@ function ActivateAnimal(iPhase,iSequence){
      } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni opakovani dvojice ctvercu a pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
         TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    
-        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);   //aktivuj =false
         // casovac nastavim az po uplynuti pauzy (na zacatku nove dvojice ctvercu v treningu)
      } else {
         TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee];
@@ -456,8 +452,15 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
          //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
          preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
          preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+       }  
+       if(CasZkoumej > 0 || iPhase>=RuznychDvojicCtvercu){  // po osmi dvojicich ctvercu ploty zmizi - neho hned, pokud je na zacatku prohledavani
+          PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
+          debug.log("Ploty neviditelne");
+       }  else {
+          PlotyZmiz(false); 
+          debug.log("Ploty viditelne");   
        }           
-     } else { // deaktivuju vsechna mista 
+     } else { // deaktivuju vsechna mista, volne prohledavani stanu
         var Ctverce = SquarePairs[iPhase];  
         for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
           for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
@@ -467,6 +470,8 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
              preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
           }
         }
+        PlotyZmiz(false); // zobrazi vsechny ploty 
+        debug.log("Ploty viditelne"); 
      }
 }
 
@@ -507,6 +512,7 @@ function AimNo14(){     // vrati cislo zvirete 0 - 3
 }
 
 function PlotPosun(iiPhase,ukaz){
+     // schova ploty tak,ze se pres ne da chodit - zasune je pod podlahu
      if (iiPhase >= 0){
        // kvuli pruchodu v jedne fazi treningu
        var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE 
@@ -536,7 +542,7 @@ function PlotPosun(iiPhase,ukaz){
     }
 }
 function PlotyZmiz(skryj){
-    // udela ploty neviditelne, nebo viditelne. 
+    // udela ploty neviditelne, nebo viditelne.  - ale porad tam jsou, takze se pres ne neda chodit
     for(var key in PlotyPozice){
         var PlotZmiz = PlotName + key;
         var CtverecPozice = PlotyPozice[key];
