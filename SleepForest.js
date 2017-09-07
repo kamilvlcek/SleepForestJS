@@ -81,7 +81,7 @@ var AnimalXYPositions = {  // pozice zvirat abych je mohl skryvat - posouvat a z
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 var PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -222;  // vyska plotu ukazaneho
-var TestCas = 120; // kolik vterin ma hrac na nalezeni cile v testu
+var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -355,7 +355,7 @@ function ActivateAnimal(iPhase,iSequence){
     // vola se po aktivaci paru ctvercu a pak po nalezeni kazdeho zvirete
     // aktivuje  oblast kolem zvirete jako cil, a ostatni zvirata z obou ctvercu jako avoidance 
      // CILOVE MISTO
-     ActiveN =  GetActiveNames(); // ziskam jmena aktivniho cile a teepee
+     ActiveN =  GetActiveNames(); // ziskam jmena aktivniho cile a teepee, nastavi ActiveAimName,ActiveTeepee,ActiveAimNameText
           
      // OBRAZEK A TEXT KAM NAVIGOVAT
      if(DoTest) { // v testu ma nejdriv ukazat na cil
@@ -364,7 +364,8 @@ function ActivateAnimal(iPhase,iSequence){
         Ukazal = false;          
         experiment.enablePlayerMovement(false); // zakazu chuzi 
         //experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
-        text.modify(SHAPE_ZAMER,"+");  
+        text.modify(SHAPE_ZAMER,"+");
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);   //aktivuj =true  
      } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni opakovani dvojice ctvercu a pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
         TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";    
@@ -423,6 +424,9 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
      if(aktivuj){ 
        // aktivuju aktualni cil
        debug.log('ActiveAimName: '+ActiveAimName);
+       ActiveSquareName = ActiveAimName.substring(3,4); // jen znak ctverce, treba E
+       debug.log('ActiveSquareName: '+ActiveSquareName);
+       
        experiment.logToTrackLog("Aim search:"+ActiveAimName); // zapise do logu, ze se zacina hledat dvojice ctvercu 
        preference.get(ActiveAimName).setActive(true);         // cilova oblast se udela aktivni
        preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
@@ -433,15 +437,18 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
        InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni
        var Ctverce = DoTest ? AllSquares : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
        for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
+          SquareName = Ctverce[isquare]; 
+          if (DoTest && ActiveSquareName != SquareName){
+                    continue;  // zkouska - v testu jsou aktivni jen mista u ciloveho ctverce
+          }
           for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
               //aimn =  AnimalSequence[iPhase][ianimal];            
-              SquareName = Ctverce[isquare];    
               Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
               if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
                 //debug.log("nepouzit InactiveName " + Aim); 
                 continue;  // pokud se jedna o aktualni cil nebo uz je v seznamu  InactiveNames              
-              } else {
-                InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance     
+              } else {                   
+                InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance
               }         
           }               
        }
