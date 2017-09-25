@@ -163,6 +163,11 @@ function run() {
     if (key.pressed('k')){ // ukonceni prohledavani, kvuli usetreni casu
         CasZkoumejStart.setSeconds(CasZkoumejStart.getSeconds() - CasZkoumej);  // posunu zacatek zkoumani v case dozadu  - timestamp je asi v ms
     }
+    if (key.pressed("x")){
+		XX = experiment.getPlayerLocationX();
+        YY = experiment.getPlayerLocationY();
+        debug.log('PlayerLocation X: '+XX+', Y: '+YY);
+	}
 	if (IsPauza && key.pressed("space")){   
 	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku 
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
