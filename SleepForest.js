@@ -24,46 +24,29 @@ var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
 // pozice zvirete v TEST-SleepForest Edo12box.ut2: -5386,852,916, kamera -5355 801 954
 
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
-    A2:{x:-24,y:-172}, A3:{x:-146,y:71},
-    B2:{x:1832,y:-98},    B3:{x:1674,y:54},    B4:{x:129,y:-172},
-    C3:{x:3498,y:39},    C4:{x:2019,y:-101},
-    D1:{x:-85,y:245},    D2:{x:31,y:1633},    D3:{x:-134,y:1994},
-    E1:{x:1702,y:233},    E2:{x:1895,y:1730},    E3:{x:1685,y:1978},    E4:{x:186,y:1698},
-    F1:{x:3509,y:214},    F3:{x:3518,y:1957},    F4:{x:2082,y:1730},
-    G1:{x:-82,y:2155},    G2:{x:93,y:3467},
-    H1:{x:1723,y:2143},    H2:{x:1959,y:3549},    H4:{x:243,y:3499},
-    I1:{x:3524,y:2129},    I4:{x:2146,y:3533}
+    AB:{x:106,y:-2354}, AD:{x:491,y:46}, 
+    BC:{x:2117,y:-2381}, BE:{x:2489,y:50}, 
+    CF:{x:4484,y:47}, DE:{x:106,y:-353}, DG:{x:491,y:2052}, 
+    EF:{x:2117,y:-347}, EH:{x:2489,y:2055}, 
+    FI:{x:4484,y:2056}, GH:{x:106,y:1656}, HI:{x:2117,y:1650}
 };
 
-var PlotyPozice2 = {   // ploty v rozich mezi ctverci, musi zmizet pri testu
-    AB1:{x:355,y:-1831}, AB2:{x:454,y:55},AD1:{x:-1783,y:159},AD2:{x:6,y:416},
-    BC1:{x:2129,y:-1842},BC2:{x:2267,y:40},BE1:{x:157,y:468},BE2:{x:1865,y:500},
-    CF1:{x:2051,y:500},CF2:{x:3838,y:527},
-    DE1:{x:483,y:230},DE2:{x:461,y:1976},DG1:{x:-1712,y:2068},DG2:{x:62,y:2240},
-    EF1:{x:2272,y:216},EF2:{x:2286,y:1957},EH1:{x:214,y:2272},EH2:{x:1929,y:2329},
-    FI1:{x:2112,y:2329},FI2:{x:3897,y:2350},
-    GH1:{x:514,y:2142},GH2:{x:387,y:3914},HI1:{x:2300,y:2132},HI2:{x:2170,y:3904},
-
-    // ploty uplne na kraji, ty musi taky zmizet pri testu
-    A1:{x:-244,y:-1816}, A1a:{x:-1840,y:-1586},A1b:{x:-53,y:-1392},A4:{x:-1812,y:-375},A4a:{x:-1451,y:-1816},A4b:{x:-1344,y:68},
-    B1:{x:1586,y:-1827},B1a:{x:101,y:-1399},B1b:{x:1805,y:-1312},
-    C1:{x:3759,y:-1846},C1x:{x:2576,y:-1849},C1a:{x:1993,y:-1317},C1b:{x:3698,y:-1315},C2:{x:3808,y:-73},C2b:{x:4087,y:-22},
-    D4:{x:-1739,y:1687},D4a:{x:-1299,y:243},D4b:{x:-1365,y:1993},
-    F2:{x:3864,y:1754},F2a:{x:4100,y:204},F2b:{x:4113,y:1938},
-    G3:{x:-211,y:3926}, G3a:{x:-1639,y:3897},G3b:{x:-121,y:4054},G4:{x:-1682,y:3300},G4a:{x:-1309,y:2152},G4b:{x:-1441,y:3925},
-    H3:{x:1592,y:3920},H3a:{x:273,y:4100},H3b:{x:1987,y:4125},
-    I2:{x:3924,y:3554},I2a:{x:4097,y:2114},I2b:{x:4000,y:3876},I3:{x:3393,y:3909},I3a:{x:2175,y:4123},I3b:{x:3955,y:4081}
+var PlotyPozice2 = { // ploty na kraji, ktere musi zmizet pri testu  
+    A1:{x:491,y:-1947}, A2:{x:-1878,y:-2359}, 
+    B:{x:2489,y:-1949}, C1:{x:4484,y:-1949}, C2:{x:4109,y:-2371}, 
+    F:{x:4109,y:-363}, D:{x:-1878,y:-353}, 
+    G2:{x:-1878,y:1650}, G1:{x:491,y:4064}, 
+    H:{x:2489,y:4066}, I2:{x:4109,y:1650}, I1:{x:4484,y:4069}
 };
 
 var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
-    AB:['A2','B4'],BA:['A2','B4'], AD:['A3','D1'],DA:['A3','D1'],
-    BC:['B2','C4'],CB:['B2','C4'], BE:['B3','E1'],EB:['B3','E1'],
-    CF:['C3','F1'],FC:['C3','F1'],
-    DE:['D2','E4'],ED:['D2','E4'], DG:['D3','G1'],GD:['D3','G1'],
-    EF:['E2','F4'],FE:['E2','F4'], EH:['E3','H1'],HE:['E3','H1'],
-    FI:['F3','I1'],IF:['F3','I1'],
-    GH:['G2','H4'],HG:['G2','H4'],
-    HI:['H2','I4'],IH:['H2','I4']    
+    AB:['AB'],	BA:['AB'], AD:['AD'],	DA:['AD'], 
+    BC:['BC'],	CB:['BC'], BE:['BE'],	EB:['BE'], 
+    CF:['CF'],	FC:['CF'], 
+    DE:['DE'],	ED:['DE'], DG:['DG'],	GD:['DG'], 
+    EF:['EF'],	FE:['EF'], EH:['EH'],	HE:['EH'], 
+    FI:['FI'],	IF:['FI'], 
+    GH:['GH'],	HG:['GH'], HI:['HI'],	IH:['HI']   
 }; // který z plotù se má odstranit pro prùchod mezi ètverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
 
 var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tomto poli (0 nebo 1) maji odpovidat cislum v AnimalSequence
@@ -79,8 +62,8 @@ var AnimalXYPositions = {  // pozice zvirat abych je mohl skryvat - posouvat a z
     I1:{x:3241,y:2799,z:-254},I3:{x:3251,y:3290,z:-220}
 };
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
-var PlotHiddenZ = -400;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
-var PlotShownZ = -222;  // vyska plotu ukazaneho
+var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
+var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
 
 var StartSubjectPositions = {
@@ -119,7 +102,7 @@ var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma 
 var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 function init() {	
-	experiment.setMap("TEST-SleepForest Alena 27_7 FINAL"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
+	experiment.setMap("TEST-SleepForest bohaty-ploty_15-9"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
 }
 
 function run() {
