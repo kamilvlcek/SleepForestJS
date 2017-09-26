@@ -71,6 +71,18 @@ var StartSubjectPositions = {
     D:{x:-1053,y:834}, E:{x:1037,y:834}, F:{x:3081,y:834},
     G:{x:-1053,y:2900}, H:{x:1037,y:2900}, I:{x:3081,y:2900}    
 }
+
+var SquaresBoundaries = { // hranice ctvercu pro detekci vchazeni a vychazeni 
+    X: {A:[-1594,-318],B:[414,1690],C:[2392,3668], // pojmenovani sloupcu ABC - musi byt v prvni radce
+        D:[-1594,-318],E:[414,1690],F:[2392,3668], 
+        G:[-1594,-318],H:[414,1690],I:[2392,3668] 
+        },
+    Y: {A:[-1630,-346],D:[416,1700],G:[2414,3698], // pojmenovani radku ADG  - musi byt v prvni radce
+        B:[-1630,-346],E:[416,1700],H:[2414,3698], 
+        C:[-1630,-346],F:[416,1700],I:[2414,3698]        
+        }
+}
+
 var AllSquares = ['A','B','C','D','E','F','G','H','I'];
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
 var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
@@ -91,6 +103,10 @@ var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci
 var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, nebo '' pokud v zadnem cili
  // blbne funkce left
+var IsInSquare = ""; // jmeno aktualniho ctverce A-I,ve kterem se clovek nachazi
+var RunCycle = 0;  // po kolikate bezi fukce run - jen pro debug
+var TimerCycle = 0;  // po kolikate byl spusten timer  SquareLeftEntered  
+var TimerCyclePeriod = 1; // kolik sekund mezi volanim
 var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na zacatku kazde dvojice ctvercu, budu nulovat
 var TestEntrances = 0; // kolik uspesnych vstupu co cile v testu 
 var SquarePairsErrors = {}; // pole poctu chyb v kazde treningove dvojici ctvercu. V jejim poslednim vyskytu
@@ -101,10 +117,11 @@ var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skrytu 
 var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
 var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
 var CasZkoumejStart = 0; //  date object zacatku pocitani
+
 function init() {	
 	experiment.setMap("TEST-SleepForest bohaty-ploty_15-9"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
 }
-
+// --------------------------- RUN -----------------------------------------------
 function run() {
 	if (experiment.isStarted()){
 		experiment.setCollisionCylinder(20,88);
@@ -126,15 +143,16 @@ function run() {
          
         ActivateSquares(iPhase); //    
         ActivateAnimal(iPhase,iSequence);
-        
+        timer.set("SquareLeftEntered",TimerCyclePeriod); 
 	}
-	if (key.pressed("g")){
+	/*
+  if (key.pressed("g")){
 		preference.get(ActiveAimName).setVisible(true);
 	}
 	if (key.pressed("h")){
 		preference.get(ActiveAimName).setVisible(false);
 	}
-	
+	*/
 	if (key.pressed('r')){
         IsInAim = '';
         debug.log('left: ANY manually');
@@ -147,10 +165,11 @@ function run() {
         CasZkoumejStart.setSeconds(CasZkoumejStart.getSeconds() - CasZkoumej);  // posunu zacatek zkoumani v case dozadu  - timestamp je asi v ms
     }
     if (key.pressed("x")){
-		XX = experiment.getPlayerLocationX();
-        YY = experiment.getPlayerLocationY();
-        debug.log('PlayerLocation X: '+XX+', Y: '+YY);
-	}
+		  XX = experiment.getPlayerLocationX();
+      YY = experiment.getPlayerLocationY();
+      debug.log('PlayerLocation X: '+XX+', Y: '+YY);
+	  } 
+    
 	if (IsPauza && key.pressed("space")){   
 	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku 
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
@@ -247,7 +266,7 @@ function run() {
       InactiveEntered = InactiveNames[iaim]; 
     }
   }
-  
+  // VYSTUP Z CHYBNEHO CILE 
   if(InactiveEntered.length>0 && IsInAim==InactiveEntered && preference.get(InactiveEntered).left() && CasZkoumejZbyva <= 0 ) {
       debug.log("left Avoid: "+InactiveEntered);
       experiment.logToTrackLog("Avoid left:"+InactiveEntered);
@@ -255,8 +274,12 @@ function run() {
       text.modify(TXT_CHYBA,""); 
       InactiveEntered = '';         
   }
-	
+  
+  RunCycle = RunCycle + 1;   // testuju, jak se spousti tenhle cyklus RUN
+  debug.log("RunCycle "+RunCycle);
+  
 }
+// -------------------- FUNKCE -----------------------------------------
 function timerTask(name) {	
 	if (name == "novectverce"){ 
 	   text.modify(TXT_INSTRUKCE,"");
@@ -291,6 +314,30 @@ function timerTask(name) {
         debug.log(iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu       
         SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
       }
+    } else if(name='SquareLeftEntered'){
+       // osetreni opusteni ctverce a vstupu do jineho
+      XX = experiment.getPlayerLocationX();
+      YY = experiment.getPlayerLocationY(); 
+      //debug.log('timer ' +TimerCycle + ' PlayerLocation X: '+XX+', Y: '+YY)
+      if(XX!=-1 && YY !=-1){
+         TimerCycle++; // pricitam jen nenulove souradnice 
+         if(TimerCycle>1) { // po prve je cislo 1, to jeste nechci, muze byt nespravne 
+          	if(IsInSquare != ''){                   
+              sleft = SquareLeft(XX,YY);
+              if(sleft !=false){
+                 debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);
+                 IsInSquare = ''; // uz neni ve ctverci
+              }  
+            } else {
+              se = SquareEntered(XX,YY);
+              if(se != false) {
+                 debug.log('vesel do ctverce '+se);
+                 IsInSquare = se; // uz je ve ctverci
+              } 
+            }  
+        }
+      }
+      timer.set("SquareLeftEntered",TimerCyclePeriod); 
     }
 } 
 function ActivateSquares(iPhase){
@@ -574,7 +621,8 @@ function PresunHrace(iiPhase){
      experiment.setPlayerLocation([SubjektPozice.x,SubjektPozice.y]);
      logtext =  "Player moved to: "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y];
      debug.log(logtext); 
-     experiment.logToTrackLog(logtext); 
+     experiment.logToTrackLog(logtext);
+     IsInSquare = SquareName;   // v jakem je aktualne ctverci
 }
 
 function SetSquarePairErrors(iiPhase,n){     // nastavi pocti chyb pro dvojici ctvercu - pokud n=0 tak resetuje, jinak cislo pricte k aktualni hodnote
@@ -677,4 +725,55 @@ function Zamerovac(){
    */
    text.create(SHAPE_ZAMER, x, y, 0, 0, 255, 10, ""); // ukazovaci krizek - modra
    debug.log("zamerovaci krizek: ["+x+";"+y+"]"); // protoze kruh se v prubehu testu prestane vykreslovat, nevim vubec proc 
+}
+
+function SquareLeft(XX,YY) {  // vraci udaj, kterym smerem odesel ze ctverce
+   x01 = SquaresBoundaries['X'][IsInSquare];
+   y01 = SquaresBoundaries['Y'][IsInSquare];
+   //debug.log('x01: '+x01+', y01: '+y01); 
+   //debug.log('SquareLeft PlayerLocation X: '+XX+', Y: '+YY);          
+   if(XX<x01[0]) {
+      return 'Z'; // odesel na zapad
+   } else if( XX>x01[1]){
+      return 'V'; // odesel na vychod
+   } else if (YY<y01[0] ){
+      return 'S';  // odesel na sever
+   } else if (YY>y01[1]) {
+      return 'J';  // odesel na jih
+   } else {
+      return false; // jinak je porad uvnitr
+   }
+}
+
+function SquareEntered(XX,YY){  // vraci jmeno ctverce, ve kterem clovek je, nebo false, pokud je mimo ctverec
+   var SquareColumns = ['A','B','C'];
+   var SquareRows = ['A','D','G'];
+   var SquareI = {A:{A:'A',D:'D',G:'G'}, B: {A:'B',D:'E',G:'H'}, C: {A:'C',D:'F',G:'I'}};
+   //var XX = experiment.getPlayerLocationX();
+   //var YY = experiment.getPlayerLocationY();
+   var foundSC = false; // sloupec ctverce-  A, B nebo C
+   for(c=0;c<SquareColumns.length;c++){
+     SC = SquareColumns[c];
+     if(XX > SquaresBoundaries['X'][SC][0] && XX < SquaresBoundaries['X'][SC][1]) {
+        foundSC = true; // ano, je mezi horni a dolni hranici sloupce 
+        break; // konci cyklus uz vim SC
+     }   
+   }
+   var foundSR = false; // radka ctverce-  A, D nebo G
+   for(r=0;r<SquareRows.length;r++){
+     SR = SquareRows[r];
+     if(YY > SquaresBoundaries['Y'][SR][0] && YY < SquaresBoundaries['Y'][SR][1]) {
+        foundSR = true;  // ano, je mezi horni a dolni hranici radky 
+        break; // konci cyklus uz vim SR
+     }   
+   }
+   //debug.log('SquareEntered SC: '+ (foundSC?SC:'') + ' SR: '+(foundSR?SR:'') ); 
+   if(foundSC && foundSR){  // nasel jsem sloupec i radku, takze ve ctverci clovek je
+      debug.log('SquareEntered SC: '+ (foundSC?SC:'') + ' SR: '+(foundSR?SR:'') ); 
+      SquareName = SquareI[SC][SR];
+      return SquareName;
+   } else {
+      return false; // neni v zadnem ctverci
+   }
+   
 }
