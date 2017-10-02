@@ -224,9 +224,9 @@ function run() {
            
       preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
       ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
-      preference.get(ActiveAimName).setActive(false);
-      for(iaim = 0; iaim < InactiveNames.length; iaim++){  // deaktivuju avoidance mista
-        preference.get(InactiveNames[iaim]).setActive(false);
+      preference.get(ActiveAimName).setActive(false); // cilove misto deaktivuju
+      for(iaim = 0; iaim < InactiveNames.length; iaim++){  
+        preference.get(InactiveNames[iaim]).setActive(false); // deaktivuju avoidance mista
       }
       if(!DoTest){
         AimEntrances[AimNo14()] = AimEntrances[AimNo14()] + 1; // zvysim pocet vstupu do mista 
@@ -244,7 +244,7 @@ function run() {
       IsInAim = "";
       Nalezenych++; // zvysim pocet nalezenych cilu
       NextTrial(false);  // vola i ActivateSquares      
-      ActivateAnimal(iPhase,iSequence);      
+      ActivateAnimal(iPhase,iSequence); // aktivujuju dalsi cilova mista a inactivegoals=chyby     
 	}
    // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
@@ -325,14 +325,20 @@ function timerTask(name) {
           	if(IsInSquare != ''){                   
               sleft = SquareLeft(XX,YY);
               if(sleft !=false){
-                 debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);
-                 IsInSquare = ''; // uz neni ve ctverci
+                 debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);                 
+                 if(DoTest){
+                    ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel
+                 }
+                 IsInSquare = ''; // uz neni ve ctverci - musim az po ActivateAvoidace(false)
               }  
             } else {
               se = SquareEntered(XX,YY);
               if(se != false) {
                  debug.log('vesel do ctverce '+se);
                  IsInSquare = se; // uz je ve ctverci
+                 if(DoTest){
+                    ActivateAvoidace(true); // aktivuje vsechny stany v aktivnim ctverci jako avoidance
+                 }                 
               } 
             }  
         }
@@ -469,32 +475,9 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
        ShowAnimalPicture(ActiveTeepee, true); // ukaze obrazek ciloveho zvirete 
        
        // AVOIDANCE MISTA
-       InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni
-       var Ctverce = DoTest ? AllSquares : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
-       for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
-          SquareName = Ctverce[isquare]; 
-          if (DoTest && ActiveSquareName != SquareName){
-                    continue;  // zkouska - v testu jsou aktivni jen mista u ciloveho ctverce
-          }
-          for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
-              //aimn =  AnimalSequence[iPhase][ianimal];            
-              Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
-              if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
-                //debug.log("nepouzit InactiveName " + Aim); 
-                continue;  // pokud se jedna o aktualni cil nebo uz je v seznamu  InactiveNames              
-              } else {                   
-                InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance
-              }         
-          }               
-       }
-       debug.log("InactiveNames: " + InactiveNames);
-       // ted cely seznam InactiveNames postupne aktivuju
-       for(iaim = 0; iaim < InactiveNames.length; iaim++){
-         Aim = InactiveNames[iaim];
-         //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
-         preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
-         preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-       }  
+       ActivateAvoidace(true);
+       
+       // PLOTY
        if(CasZkoumej > 0 || iPhase>=RuznychDvojicCtvercu){  // po osmi dvojicich ctvercu ploty zmizi - neho hned, pokud je na zacatku prohledavani
           PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
           debug.log("Ploty neviditelne");
@@ -502,21 +485,58 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
           PlotyZmiz(false); 
           debug.log("Ploty viditelne");   
        }           
-     } else { // deaktivuju vsechna mista, volne prohledavani stanu
-        var Ctverce = SquarePairs[iPhase];  
-        for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
-          for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
-             SquareName = Ctverce[isquare];    
-             Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
-             preference.get(Aim).setActive(false);   // deaktivuju misto 
-             preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-          }
-        }
+     } else {
+        ActivateAvoidace(false);
+        
         PlotyZmiz(false); // zobrazi vsechny ploty 
         debug.log("Ploty viditelne"); 
-     }
+     } 
 }
-
+function ActivateAvoidace(aktivuj){
+      if(aktivuj){
+          // aktivuju vsechny avoidance mista - ty stany do kterych nema chodit
+          // 1. naplnim seznam cilu k aktivaci
+         InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni - globalni 
+         var Ctverce = DoTest ? [IsInSquare] : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
+         for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
+            SquareName = Ctverce[isquare]; 
+            //if (DoTest && ActiveSquareName != SquareName){
+            //          continue;  // zkouska - v testu jsou aktivni jen mista u ciloveho ctverce
+            //}
+            for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
+                //aimn =  AnimalSequence[iPhase][ianimal];            
+                Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
+                if(Aim ==   ActiveAimName || contains(InactiveNames,Aim)){
+                  //debug.log("nepouzit InactiveName " + Aim); 
+                  continue;  // pokud se jedna o aktualni cil nebo uz je v seznamu  InactiveNames              
+                } else {                   
+                  InactiveNames.push(Aim);  // pridam dalsi polozku do seznamu neaktivnich cilu - cili avoidance
+                }         
+            }               
+         }
+         debug.log("ActivateAvoidace InactiveNames: " + InactiveNames);
+         // 2. ted cely seznam InactiveNames postupne aktivuju
+         for(iaim = 0; iaim < InactiveNames.length; iaim++){
+           Aim = InactiveNames[iaim];
+           //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
+           preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
+           preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+           // zase je deaktivuju po vstupu do cile nebo po uplynuti casu
+         }
+       } else { // deaktivuju vsechna mista, volne prohledavani stanu  
+          var Ctverce = DoTest ? [IsInSquare] :  SquarePairs[iPhase];  // v testu pri odchodu z ctverci, v treningu pri volnem prohledavani
+          for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
+            for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
+               SquareName = Ctverce[isquare];    
+               Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
+               preference.get(Aim).setActive(false);   // deaktivuju misto 
+               preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+            }
+          }
+          debug.log("ActivateAvoidace Ctverce deaktivovany: " + Ctverce);
+            
+       }  
+}
 function toInt(n){ // prevede float to int
   return ~~n; 
 }
@@ -769,7 +789,7 @@ function SquareEntered(XX,YY){  // vraci jmeno ctverce, ve kterem clovek je, neb
    }
    //debug.log('SquareEntered SC: '+ (foundSC?SC:'') + ' SR: '+(foundSR?SR:'') ); 
    if(foundSC && foundSR){  // nasel jsem sloupec i radku, takze ve ctverci clovek je
-      debug.log('SquareEntered SC: '+ (foundSC?SC:'') + ' SR: '+(foundSR?SR:'') ); 
+      //debug.log('SquareEntered SC: '+ (foundSC?SC:'') + ' SR: '+(foundSR?SR:'') ); 
       SquareName = SquareI[SC][SR];
       return SquareName;
    } else {
