@@ -49,6 +49,15 @@ var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sou
     GH:['GH'],	HG:['GH'], HI:['HI'],	IH:['HI']   
 }; // který z plotù se má odstranit pro prùchod mezi ètverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
 
+var SquareDirections={ // jakym smerem se prochazi mezi dvema ploty, S Z J V - svetove strany
+    AB:['V'],	  BA:['Z'], AD:['J'],	DA:['S'], 
+    BC:['V'],	  CB:['Z'], BE:['J'],	EB:['S'], 
+    CF:['J'],	  FC:['S'], 
+    DE:['V'],	  ED:['Z'], DG:['J'],	GD:['S'], 
+    EF:['V'],	  FE:['Z'], EH:['J'],	HE:['S'], 
+    FI:['J'],	  IF:['S'], 
+    GH:['V'],	  HG:['Z'], HI:['V'],	IH:['Z']  
+}
 var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tomto poli (0 nebo 1) maji odpovidat cislum v AnimalSequence
     A:[3,5],B:[2,6],C:[2,5],
     D:[3,6],E:[4,6],F:[2,4],
@@ -82,7 +91,7 @@ var SquaresBoundaries = { // hranice ctvercu pro detekci vchazeni a vychazeni
         C:[-1630,-346],F:[416,1700],I:[2414,3698]        
         }
 }
-
+  
 var AllSquares = ['A','B','C','D','E','F','G','H','I'];
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName  
 var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
@@ -100,7 +109,7 @@ var AnimalHandleLast = 0; // posledni prirazeny handle obrazku v  AnimalPictures
 var TXT_UKOL_Last = ""; // posledni instrukce    
 var InactiveNames = ['AimE6']; // jmena vsechn neaktivnich zvirat, kam dojit je chyba
 var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
-var ErrorsNumber = 0;       // pocet chyb v sekvenci
+var ErrorsNumber = 0;       // pocet chyb v sekvenci   - zveda se po vstupu do spatneho stanu
 var IsInAim = ""; // stavova promenna, znacici cil, do ktereho clovek vstoupil, nebo '' pokud v zadnem cili
  // blbne funkce left
 var IsInSquare = ""; // jmeno aktualniho ctverce A-I,ve kterem se clovek nachazi
@@ -257,10 +266,7 @@ function run() {
       //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
       preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
       if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud je cas na zkoumani, pocitam chyby od zacatku     
-        ErrorsNumber +=1;  // chyby pocitam v testu a po prvni navsteve v treningu
-        text.modify(TXT_CHYBPOCET,"CHYBY: " + ErrorsNumber);
-        debug.log("Pocet chyb: "+ErrorsNumber);
-        if(!DoTest) SetSquarePairErrors(iPhase,1); // zvysim pocet chyb ve dvojici ctvercu o 1        
+        ZapocitejChybu();   
       }
       experiment.logToTrackLog("Errors:"+ErrorsNumber);
       InactiveEntered = InactiveNames[iaim]; 
@@ -326,8 +332,23 @@ function timerTask(name) {
               sleft = SquareLeft(XX,YY);
               if(sleft !=false){
                  debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);                 
-                 if(DoTest){
+                 if(DoTest){  // TEST
                     ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel
+                 } else if(CasZkoumejZbyva <= 0) { // TRENING a neni prozkoumavani na zacatku
+                    if(SquarePairs[iPhase][0]==IsInSquare) {  // zajima me smer z jakeho do jakeho ctverce ve dvojici jde jde
+                      var CtverceDvojice =  SquarePairs[iPhase][0]+ SquarePairs[iPhase][1]; // napriklad DE    
+                    } else { 
+                      var CtverceDvojice =  SquarePairs[iPhase][1]+ SquarePairs[iPhase][0]; // napriklad ED 
+                    }
+                    debug.log("CtverceDvojice: "+CtverceDvojice);
+                    if(SquareDirections[CtverceDvojice]!=sleft){
+                      debug.log("left in incorrect direction: "+IsInSquare + '-' + sleft);
+                      experiment.logToTrackLog("Incorrect Direction: "+IsInSquare + '-' + sleft);
+                      text.modify(TXT_CHYBA,"CHYBA !");
+                      preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk  
+                      ZapocitejChybu(); // vlozi chybu do  ErrorsNumber a SetSquarePairErrors
+                      experiment.logToTrackLog("Errors:"+ErrorsNumber);
+                    }
                  }
                  IsInSquare = ''; // uz neni ve ctverci - musim az po ActivateAvoidace(false)
               }  
@@ -796,4 +817,12 @@ function SquareEntered(XX,YY){  // vraci jmeno ctverce, ve kterem clovek je, neb
       return false; // neni v zadnem ctverci
    }
    
+}
+
+function ZapocitejChybu(){ 
+    ErrorsNumber +=1;  // chyby pocitam v testu a po prvni navsteve v treningu
+    text.modify(TXT_CHYBPOCET,"CHYBY: " + ErrorsNumber);
+    debug.log("Pocet chyb: "+ErrorsNumber);
+    if(!DoTest) SetSquarePairErrors(iPhase,1); // zvysim pocet chyb ve dvojici ctvercu o 1       
+
 }
