@@ -7,6 +7,7 @@ var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
 var TXT_INSTRUKCE_MALE = 7; // instrukce uprostred obrazovky
 var TXT_SEKUNDY = 8; // cas do ukonceni prozkoumavani dvojice ctvercu
+var TXT_DEBUG = 9; // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
 var SHAPE_ZAMER = 10;     // zamerovaci krouzek 
 
 // ctverce ABCDEFGHI, v kazdem z nich stany 1-6
@@ -74,6 +75,7 @@ var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
+var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -148,6 +150,7 @@ function run() {
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
         text.create(TXT_SEKUNDY, ScreenX - 150, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
+        if(Debug)  text.create(TXT_DEBUG,   ScreenX - 150, 60, 255, 255, 255, 3, "" ); // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
         ActivateSquares(iPhase); //    
@@ -332,9 +335,8 @@ function timerTask(name) {
               sleft = SquareLeft(XX,YY);
               if(sleft !=false){
                  debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);                 
-                 if(DoTest){  // TEST
-                    ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel
-                 } else if(CasZkoumejZbyva <= 0) { // TRENING a neni prozkoumavani na zacatku
+                 ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel - trening i test
+                 if(!DoTest && CasZkoumejZbyva <= 0 && IsPauza == false) { // TRENING a neni prozkoumavani na zacatku
                     if(SquarePairs[iPhase][0]==IsInSquare) {  // zajima me smer z jakeho do jakeho ctverce ve dvojici jde jde
                       var CtverceDvojice =  SquarePairs[iPhase][0]+ SquarePairs[iPhase][1]; // napriklad DE    
                     } else { 
@@ -351,15 +353,16 @@ function timerTask(name) {
                     }
                  }
                  IsInSquare = ''; // uz neni ve ctverci - musim az po ActivateAvoidace(false)
+                 if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5)); 
               }  
             } else {
               se = SquareEntered(XX,YY);
               if(se != false) {
                  debug.log('vesel do ctverce '+se);
                  IsInSquare = se; // uz je ve ctverci
-                 if(DoTest){
-                    ActivateAvoidace(true); // aktivuje vsechny stany v aktivnim ctverci jako avoidance
-                 }                 
+                 ActivateAvoidace(true); // aktivuje vsechny stany v aktivnim ctverci jako avoidance - trening i test
+                 text.modify(TXT_CHYBA,"");  // kdyz tam zustane napis z opusteni ctverce spatnym smerem pri treningu
+                 if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));                 
               } 
             }  
         }
@@ -409,7 +412,6 @@ function ActivateSquares(iPhase){
        experiment.enablePlayerRotation(false); // zakazu i otaceni na dobu pauzy
        experiment.enablePlayerMovement(false); // zakazu chuzi na dobu pauzy       
        IsPauza = true; // v treningu - pauza pred novou dvojici ctvercu 
-       //timer.set("novectverce",10); // za jak dlouho tenhle napis sam zmizi
      }
      text.modify(TXT_CTVEREC,"KOLO: "+(iPhase+1) ); // modre cislo    
 }
@@ -457,6 +459,7 @@ function GetActiveNames () {
      }
      // tyhle jmena bych potreboval ziskat v nejake funkci, abych ji mohl volat i po uplynuti casovace CasZkoumej 
      ActiveAimName = AimName+SquareName+AimNo16; // globalni promenna     
+     if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));  
      ActiveTeepee = SquareName+AimNo16;    // napriklad 'E4'
      ActiveAimNameText = AnimalNames[ActiveTeepee];   // jmeno zvirete kam navigovat, nepriklad KOCKU - globalni promenna
      var ActiveN = { ActiveAimName:ActiveAimName, ActiveTeepee:ActiveTeepee};
@@ -485,7 +488,7 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
      
      if(aktivuj){ 
        // aktivuju aktualni cil
-       debug.log('ActiveAimName: '+ActiveAimName);
+       debug.log('ActiveAimName: '+ActiveAimName);      
        ActiveSquareName = ActiveAimName.substring(3,4); // jen znak ctverce, treba E
        debug.log('ActiveSquareName: '+ActiveSquareName);
        
@@ -493,7 +496,8 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
        preference.get(ActiveAimName).setActive(true);         // cilova oblast se udela aktivni
        preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
        
-       ShowAnimalPicture(ActiveTeepee, true); // ukaze obrazek ciloveho zvirete 
+       ShowAnimalPicture(ActiveTeepee, true); // ukaze obrazek ciloveho zvirete
+       if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));  
        
        // AVOIDANCE MISTA
        ActivateAvoidace(true);
@@ -518,7 +522,7 @@ function ActivateAvoidace(aktivuj){
           // aktivuju vsechny avoidance mista - ty stany do kterych nema chodit
           // 1. naplnim seznam cilu k aktivaci
          InactiveNames = []; // seznam cilu, ktere nejsou aktualne aktivni - globalni 
-         var Ctverce = DoTest ? [IsInSquare] : SquarePairs[iPhase];   // pri treningu a testu mam jine zdrojove pole ctvercu, jinak je vsechno stejne
+         var Ctverce = [IsInSquare]; //DoTest ? [IsInSquare]  : SquarePairs[iPhase];   // pri treningu a testu aktivuju jen aktualni ctverec
          for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
             SquareName = Ctverce[isquare]; 
             //if (DoTest && ActiveSquareName != SquareName){
@@ -545,7 +549,7 @@ function ActivateAvoidace(aktivuj){
            // zase je deaktivuju po vstupu do cile nebo po uplynuti casu
          }
        } else { // deaktivuju vsechna mista, volne prohledavani stanu  
-          var Ctverce = DoTest ? [IsInSquare] :  SquarePairs[iPhase];  // v testu pri odchodu z ctverci, v treningu pri volnem prohledavani
+          var Ctverce = [IsInSquare]; // DoTest ? [IsInSquare] :  SquarePairs[iPhase];  // v testu pri odchodu z ctverce, v treningu pri volnem prohledavani
           for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
             for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
                SquareName = Ctverce[isquare];    
@@ -721,7 +725,7 @@ function NextTrial(nextPhase){
       // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
       // v testu jdu vzdy na dalsi fazi
       iPhase += 1;        
-      ActivateSquares(iPhase);
+      ActivateSquares(iPhase); // i presune hrace na novy start
       iSequence = 0;  // tahle hodnota se nepreda ven, kdyz je to uvnitr funkce
       ErrorsNumber = 0; // vymazu pocet chyb
       text.modify(TXT_CHYBPOCET,""); // smazu vypis chyb, nez clovek zase nejakou udela
