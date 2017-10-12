@@ -64,6 +64,11 @@ var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tom
     D:[3,6],E:[4,6],F:[2,4],
     G:[1,5],H:[1,4],I:[1,3]
 }; 
+var AnimalPositionsActive = { // ktera zvirata jsou aktivni - maji se pouzivat pri testu
+    A:[3],B:[2],C:[2],
+    D:[3],E:[4],F:[2],
+    G:[1],H:[4],I:[1]        
+}; 
 var AnimalXYPositions = {  // pozice zvirat abych je mohl skryvat - posouvat a zase zobrazovat
     A3:{x:-866,y:-835,z:-214},A5:{x:-1353,y:-1071,z:-212}, B2:{x:1351,y:-1027,z:-206}, B6:{x:890,y:-1276,z:-219},
     C2:{x:3362,y:-1060,z:-255},C5:{x:2738,y:-1053,z:-212}, D3:{x:-848,y:1241,z:-212},D6:{x:-1184,y:760,z:-196},
@@ -75,7 +80,7 @@ var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
-var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
+var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -245,7 +250,7 @@ function run() {
         debug.log("vstup cislo "+AimEntrances[AimNo14()]);
       } else {
         TestEntrances += 1;
-        ZvirataSchovej(true); //ukaze aktivni zvire     
+        ZvirataSchovej(1); //ukaze aktivni zvire     
       }
 	}
 	
@@ -385,6 +390,7 @@ function ActivateSquares(iPhase){
           experiment.setStop();
        } 
      }  else {    // ****************** TRENING     ******************
+       ZvirataSchovej(2); // skryju nepouzivana zvirata - podle AnimalPositionsActive
        if(iPhase>0){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
           PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
@@ -452,10 +458,12 @@ function GetActiveNames () {
     // nastavuje globalni promennou ActiveAimNameText
     var SquareName = CtverecJmeno();  //  jmeno aktualniho ctverce ABC DEF GH nebo I
      if (DoTest){
-        var AimNo16 =   AnimalPositions[SquareName][TestSequence[iPhase][2]];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
+        var Zvirata = AnimalPositionsActive[SquareName]; // ma se pouzivat jedno zvire ve ctverci, nebo obe? 2017-10-12
+        var AimNo16 =   Zvirata.length>1 ? Zvirata[TestSequence[iPhase][2]] : Zvirata[0];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
      }  else {
         var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile v ramci ctverce, zbytek po deleni 10ti , 0 nebo 1
-        var AimNo16 = AnimalPositions[SquareName][AimNo01];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
+        var Zvirata = AnimalPositionsActive[SquareName]; // ma se pouzivat jedno zvire ve ctverci, nebo obe? 2017-10-12  
+        var AimNo16 = Zvirata.length>1 ? AnimalPositions[SquareName][AimNo01] : Zvirata[0];  // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6
      }
      // tyhle jmena bych potreboval ziskat v nejake funkci, abych ji mohl volat i po uplynuti casovace CasZkoumej 
      ActiveAimName = AimName+SquareName+AimNo16; // globalni promenna     
@@ -554,6 +562,8 @@ function ActivateAvoidace(aktivuj){
             for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
                SquareName = Ctverce[isquare];    
                Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
+               prefaim = preference.get(Aim);
+               if(prefaim == null) debug.log('ActivateAvoidace: aim null '+Aim);  //2017-10-12 - stava se to, proc?
                preference.get(Aim).setActive(false);   // deaktivuju misto 
                preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
             }
@@ -603,7 +613,7 @@ function PlotPosun(iiPhase,ukaz){
      if (iiPhase >= 0){
        // kvuli pruchodu v jedne fazi treningu
        var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE 
-       for(p=0;p<=1;p++){
+       for(p=0; p<SquarePassage[CtverceDvojice].length; p++){
          var CtverecName = SquarePassage[CtverceDvojice][p];    // napriklad postupne D2 a E4
          var PlotZmiz = PlotName + CtverecName;   // napriklad PlotD2        
          //mark.get(PlotZmiz).setVisible(true);
@@ -643,18 +653,35 @@ function PlotyZmiz(skryj){
 }
 function ZvirataSchovej(ukaz){
   // schova vsechna zvirata, nebo ukaze jen to aktivni pokud ukaz = 1
-    if(!ukaz){  
+    if(ukaz==0){
+      // skryju vsechna zvirata  
       for(var key in AnimalXYPositions){
           var ZvireZmiz = AnimalName + key; // cele jmeno zvirete napr AnimalA2
           var Pozice = AnimalXYPositions[key];
           mark.get(ZvireZmiz).setLocation([Pozice.x,Pozice.y, AnimalHiddenZ]); // -400 bude pod podlahou, normalni je z
           //debug.log("schovano: "+ZvireZmiz + " na pozici "+[Pozice.x,Pozice.y,Pozice.z]) ;
       } 
-     } else {
+    } else if(ukaz==1) {
+        // ukazu aktivni zvire
         var Pozice = AnimalXYPositions[ActiveTeepee];
         var ZvireZmiz = AnimalName + ActiveTeepee; // cele jmeno zvirete napr AnimalA2
         mark.get(ZvireZmiz).setLocation([Pozice.x,Pozice.y, Pozice.z]); // -400 bude pod podlahou, normalni je z
-     }
+    } else {   
+       // ukazu vsechna zvirata, ktera se maji pouzivat a skryju ty ktere nepouzivat
+       for(var Ctverec in AnimalPositions){ // ap je jmeno ctverce
+          for(var j in AnimalPositions[Ctverec]){  // z je cislo zvirete ve ctverci
+             var ZvireJmeno = AnimalName + Ctverec + AnimalPositions[Ctverec][j];             
+             var Pozice = AnimalXYPositions[Ctverec + AnimalPositions[Ctverec][j]];
+             if ( AnimalPositionsActive[Ctverec].indexOf(AnimalPositions[Ctverec][j]) < 0 ){  // zvire neni v AnimalPositionsActive - ma se schovat
+                mark.get(ZvireJmeno).setLocation([Pozice.x,Pozice.y, AnimalHiddenZ]); 
+                debug.log('ZvirataSchovej: schovano'+ZvireJmeno );             
+             } else {
+                mark.get(ZvireJmeno).setLocation([Pozice.x,Pozice.y, Pozice.z]);
+                //debug.log('ZvirataSchovej: zobrazeno'+ZvireJmeno );   
+             }
+          }
+       }
+    }
 }
 function PresunHrace(iiPhase){
      if(DoTest){
@@ -702,7 +729,6 @@ function AnimalSequenceIndex(iiPhase){
    // funkce ktera vraci index v poli  AnimalSequence
    return iiPhase  % AnimalSequence.length; // zbytek po deleni delkou - od 0 do n-1, bude se porad opakovat
 }
-
 function SkryjNapisy(skryj){
    // behem pauzy skryje obrazek zvirete na obrazovce a text TXT_UKOL
    ShowAnimalPicture(ActiveTeepee, skryj ? false : true ); // ukaze obrazek ciloveho zvirete

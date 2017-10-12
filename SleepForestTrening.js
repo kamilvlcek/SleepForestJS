@@ -15,7 +15,8 @@ SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['I','H'], ['D','G'], ['B','C'], [
 // TRENING nastaveni sekvence zvirat v kazde dvojici ctvercu
 var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
 // porad jedna sekvence
-AnimalSequence=[[0,10,1,11]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
+AnimalSequence=[[0,10]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi 
+// 2017-10-12 - jen jedno zvire v kazdem ctverci  ,1,11
 
 // kratka sekvence na testovani skriptu
 //AnimalSequence=[/*debug*/[0,1,0,1,10,11,10,11]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi
