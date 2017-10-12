@@ -75,7 +75,7 @@ var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
-var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
+var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -149,7 +149,7 @@ function run() {
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
-        text.create(TXT_SEKUNDY, ScreenX - 150, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
+        text.create(TXT_SEKUNDY, ScreenX - 160, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
         if(Debug)  text.create(TXT_DEBUG,   ScreenX - 150, 60, 255, 255, 255, 3, "" ); // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
          
@@ -554,8 +554,10 @@ function ActivateAvoidace(aktivuj){
             for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
                SquareName = Ctverce[isquare];    
                Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
-               preference.get(Aim).setActive(false);   // deaktivuju misto 
-               preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+               if(Aim !=   ActiveAimName){   // nechci deaktivovat soucasny cil
+                 preference.get(Aim).setActive(false);   // deaktivuju misto 
+                 preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+               }
             }
           }
           debug.log("ActivateAvoidace Ctverce deaktivovany: " + Ctverce);
