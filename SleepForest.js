@@ -529,6 +529,10 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
      } 
 }
 function ActivateAvoidace(aktivuj){
+      if(IsInSquare==''){
+         debug.log("ActivateAvoidace: no IsInSquare" + aktivuj?'1':'0');  // v takovem pripade nemam co delat. Nejak to nastava, nevim jak. 
+         return;
+      }
       if(aktivuj){
           // aktivuju vsechny avoidance mista - ty stany do kterych nema chodit
           // 1. naplnim seznam cilu k aktivaci
@@ -555,8 +559,10 @@ function ActivateAvoidace(aktivuj){
          for(iaim = 0; iaim < InactiveNames.length; iaim++){
            Aim = InactiveNames[iaim];
            //debug.log("dalsi InactiveName "+iaim +" *" + Aim + "*");
-           preference.get(Aim).setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
-           preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+           if( (pref = PrefAim(Aim,'ActivateAvoidace true'))!=false){ // nekdy se to nezdari ? 2017-10-17
+            pref.setActive(true);     // aktivuju misto jako preference, avoidance nefunguje
+            pref.beepOff(true);     // nema delat zvuk samo osobe
+           }
            // zase je deaktivuju po vstupu do cile nebo po uplynuti casu
          }
        } else { // deaktivuju vsechna mista, volne prohledavani stanu  
@@ -566,14 +572,24 @@ function ActivateAvoidace(aktivuj){
                SquareName = Ctverce[isquare];    
                Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
                if(Aim !=   ActiveAimName){   // nechci aktivni cil
-                    preference.get(Aim).setActive(false);   // deaktivuju misto 
-                    preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
+                    if( (pref = PrefAim(Aim,'ActivateAvoidace false'))!=false){ // nekdy se to nezdari ? 2017-10-17
+                      pref.setActive(false);   // deaktivuju misto 
+                      pref.beepOff(true);     // nema delat zvuk samo osobe
+                    }
                }
             }
           }
           debug.log("ActivateAvoidace Ctverce deaktivovany: " + Ctverce);
-            
        }  
+}
+function PrefAim(Aim,label){
+   a = preference.get(Aim);
+   if(a == null) {
+     debug.log('ActivateAvoidace: aim null '+Aim + ' ('+label+')');  //2017-10-12 - stava se to, proc?
+     return false
+   } else {
+     return a;
+   }
 }
 function toInt(n){ // prevede float to int
   return ~~n; 
