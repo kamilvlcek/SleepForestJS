@@ -496,9 +496,9 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
      
      if(aktivuj){ 
        // aktivuju aktualni cil
-       debug.log('ActiveAimName: '+ActiveAimName);      
-       ActiveSquareName = ActiveAimName.substring(3,4); // jen znak ctverce, treba E
-       debug.log('ActiveSquareName: '+ActiveSquareName);
+       debug.log('ActiveAimName on: '+ActiveAimName);      
+       //ActiveSquareName = ActiveAimName.substring(3,4); // jen znak ctverce, treba E
+       //debug.log('ActiveSquareName: '+ActiveSquareName);
        
        experiment.logToTrackLog("Aim search:"+ActiveAimName); // zapise do logu, ze se zacina hledat dvojice ctvercu 
        preference.get(ActiveAimName).setActive(true);         // cilova oblast se udela aktivni
@@ -519,6 +519,9 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
           debug.log("Ploty viditelne");   
        }           
      } else {
+        debug.log('ActiveAimName off: '+ActiveAimName);
+        preference.get(ActiveAimName).setActive(false);         // cilova oblast se udela aktivni
+        preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
         ActivateAvoidace(false);
         
         PlotyZmiz(false); // zobrazi vsechny ploty 
@@ -562,12 +565,9 @@ function ActivateAvoidace(aktivuj){
             for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
                SquareName = Ctverce[isquare];    
                Aim =  AimName+SquareName+ianimal; // jmeno jednoho z cilu , napriklad Aim + E + 1
-	       prefaim = preference.get(Aim);
-               if(prefaim == null) debug.log('ActivateAvoidace: aim null '+Aim);  //2017-10-12 - stava se to, proc?
-               if(Aim !=   ActiveAimName){   // nechci dea
+               if(Aim !=   ActiveAimName){   // nechci aktivni cil
                     preference.get(Aim).setActive(false);   // deaktivuju misto 
                     preference.get(Aim).beepOff(true);     // nema delat zvuk samo osobe
-        
                }
             }
           }
