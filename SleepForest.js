@@ -79,7 +79,7 @@ var AnimalXYPositions = {  // pozice zvirat abych je mohl skryvat - posouvat a z
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
-var TestCas = 60; // kolik vterin ma hrac na nalezeni cile v testu
+var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
 var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
@@ -127,6 +127,9 @@ var AimEntrances = [0,0,0,0]; // pocet vstupu do 4 mist ve dvojici ctvercu, na z
 var TestEntrances = 0; // kolik uspesnych vstupu co cile v testu 
 var SquarePairsErrors = {}; // pole poctu chyb v kazde treningove dvojici ctvercu. V jejim poslednim vyskytu
 var SquarePairsErrorsLimit = 2; // pri kolika chybach je nutne trening na teto dvojici ctvercu opakovat
+var SquarePairsErrorsLimit2 = 8; // po kolika opakovanych dvojich ctvercu jeste pridat opacko na konci, viz   SquarePairsToAdd
+var SquarePairsToAdd = 8; // kole dvojic se ma na konci jeste pridat, pokud prekrocen limit na SquarePairsErrorsLimit2
+var SquarePairsAdded = 0; // kolik uz bylo pridano dvojic ctvercu na konci treningu
 var IsPauza = false; // jestli jej prave ted pauza  - mezi dvojicemi ctvercu v treningu nebo po uplynuti limitu pro nalezeni cile v testu
 var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
 var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skrytu plotu a pocatecni exploraci
@@ -265,19 +268,22 @@ function run() {
 	}
    // VSTUP DO/Z CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
-    if (IsInAim=="" && preference.get(InactiveNames[iaim]).entered() && CasZkoumejZbyva <= 0){
-      // vstup do chybneho mista
-      debug.log("entered Avoid: "+InactiveNames[iaim]);
-      experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
-      IsInAim = InactiveNames[iaim];       
-      text.modify(TXT_CHYBA,"CHYBA !"); 
-      //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
-      preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
-      if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud je cas na zkoumani, pocitam chyby od zacatku     
-        ZapocitejChybu();   
+    Aim = InactiveNames[iaim];    
+    if( (pref = PrefAim(Aim,'entered Avoid'))!=false){  // 2.3.2018 - osetreni chyby, kdy neexistuje cil k vyhybani 
+      if (IsInAim=="" && pref.entered() && CasZkoumejZbyva <= 0){
+        // vstup do chybneho mista
+        debug.log("entered Avoid: "+InactiveNames[iaim]);
+        experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
+        IsInAim = InactiveNames[iaim];       
+        text.modify(TXT_CHYBA,"CHYBA !"); 
+        //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
+        preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
+        if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud je cas na zkoumani, pocitam chyby od zacatku     
+          ZapocitejChybu();   
+        }
+        experiment.logToTrackLog("Errors:"+ErrorsNumber);
+        InactiveEntered = InactiveNames[iaim]; 
       }
-      experiment.logToTrackLog("Errors:"+ErrorsNumber);
-      InactiveEntered = InactiveNames[iaim]; 
     }
   }
   // VYSTUP Z CHYBNEHO CILE 
@@ -395,8 +401,12 @@ function ActivateSquares(iPhase){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
           PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi          
        }
+        
        if(iPhase>=SquarePairs.length) {
           SquarePairsAdd();       // pokud jsou nejake dvojice ctvercu, kde bylo moc chyb, pridam je jeste na konec sekvence
+       }
+       if(iPhase>=SquarePairs.length && SquarePairsAdded >= SquarePairsErrorsLimit2) {
+          SquarePairsAddRepeat(SquarePairsToAdd); // pridam jeste prvni osm dvojic ctvercu, aby si je jeste obcerstvili
        }
        if(iPhase>=SquarePairs.length) {            
           // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment          
@@ -729,19 +739,34 @@ function SetSquarePairErrors(iiPhase,n){     // nastavi pocti chyb pro dvojici c
 function SquarePairsAdd(){ 
   // funkce ktera smaze SquarePairs a naplni je temi, kde clovek delal moc chyb
   var SquarePairs2 = SquarePairs;   // privadam zatim do kopie 
-  isqp = SquarePairs2.length;
+  isqp = SquarePairs2.length;  
   var CtverceDvojice="";
   for (sqp = 0; sqp < SquarePairs.length; sqp++){
       CtverceDvojice =  SquarePairs[sqp][0]+ SquarePairs[sqp][1]; // napriklad DE
       if(SquarePairsErrors[CtverceDvojice]>=SquarePairsErrorsLimit){   // pokud vic chyb nez je limit
          SquarePairs2[isqp]=[SquarePairs[sqp][0] , SquarePairs[sqp][1]];   // na konec kopie pole nactu tuto dvojici ctvercu
-         isqp++;
+         isqp++; 
+         SquarePairsAdded++; // zvysim globalni pocet pridanych ctvercu
          SquarePairsErrors[CtverceDvojice] = 0;  // nechci tam tento par ctvercu vkladat znova, takze pocet chyb u nej vynuluju
          debug.log("SquarePairsAdd: pridan ctverec "+CtverceDvojice);           
       }
-  }  
+  } 
+  debug.log("SquarePairsAdd: celkem pridano "+SquarePairsAdded); 
   SquarePairs = SquarePairs2;  
   return  SquarePairs.length;
+}
+function SquarePairsAddRepeat(pocetpridat){
+  // pokud se opakovalo kvuli chybam vic nez 8 dvojic, tak se na konci jeste pridaji vsechny jednou = 8x 
+  // - i kdyz se udela chyba, tak neopakovat
+  var SquarePairs2 = SquarePairs;   // privadam zatim do kopie 
+  isqp = SquarePairs2.length;
+  for (sqp = 0; sqp < pocetpridat; sqp++){    
+    SquarePairs2[isqp]=[SquarePairs[sqp][0] , SquarePairs[sqp][1]];   // na konec kopie pole nactu tuto dvojici ctvercu
+    isqp++;    
+    debug.log("SquarePairsAddRepeat: pridan ctverec "+ SquarePairs[sqp][0]+ SquarePairs[sqp][1]); // napriklad DE  
+  }  
+  SquarePairsAdded=0 // abych v pristim kole znovu nepridaval 
+  SquarePairs = SquarePairs2; 
 }
  
 function AnimalSequenceIndex(iiPhase){

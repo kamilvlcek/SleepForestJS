@@ -2,10 +2,9 @@
 var SquarePairs=Array();
 // poradi dvojic ctvercu podle fazi treningu - tohle pole urcuje delku treningu
 SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['I','H'], ['D','G'], ['B','C'], ['H','G'], ['E','F'],
-             ['C','B'], ['D','E'], ['B','A'], ['G','H'], ['F','E'], ['H','I'], ['G','D'], ['C','F'], 
-             ['I','H'], ['B','C'], ['E','D'], ['H','G'], ['F','C'], ['A','B'], ['D','G'], ['E','F'],
-             ['C','B'], ['G','H'], ['F','E'], ['G','D'], ['H','I'], ['C','F'], ['D','E'], ['B','A']];
-  
+              ['C','B'], ['D','E'], ['B','A'], ['G','H'], ['F','E'], ['H','I'], ['G','D'], ['C','F'], 
+              ['I','H'], ['B','C'], ['E','D'], ['H','G'], ['F','C'], ['A','B'], ['D','G'], ['E','F'],
+              ['C','B'], ['G','H'], ['F','E'], ['G','D'], ['H','I'], ['C','F'], ['D','E'], ['B','A']];// 32 dvojic, kazda dvojice 2x(dopredu + dozadu)
 // nova sekvence 29.8.2017 -Alena - ctverce v ruznem poradi (AB i BA), neopakuji se za sebou, kratky pocet ukolu
 
 // jednoducha sekvence na projiti vsech ctvercu             

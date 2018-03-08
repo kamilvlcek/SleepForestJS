@@ -1,5 +1,7 @@
 // TEST - nastaveni sekvence ctverctu a zvirat v nich
 var TestSequence = [ 
+['A','B',1,1],
+['C','D',1,0],
 ['A','E',0,1],  // sekvence ctvercu a cisel zvirat. Cisla zvirat (1. cislo) jsou indexy v AnimalPositions (0 nebo 1)
 ['D','I',1,1],  // 2. cislo urcuje ze ktereho ctverce se startuje 0=prvni (v tomto radku D), 1=druhy (v tomto radku I)
 ['A','C',0,0],
@@ -7,8 +9,7 @@ var TestSequence = [
 ['C','F',0,1],
 ['B','I',0,0],
 ['D','F',1,0],
-['A','B',1,1],
-['C','D',1,0],
+['C','E',0,0],
 ['F','I',0,1],
 ['A','H',1,1],
 ['G','I',1,0],
@@ -32,7 +33,6 @@ var TestSequence = [
 ['G','I',0,1],
 ['E','D',1,0],
 ['A','I',0,0],
-['C','E',0,0],
 ['D','F',0,1],
 ['E','H',1,1],
 ['A','C',1,0],
