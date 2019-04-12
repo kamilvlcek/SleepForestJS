@@ -1,3 +1,8 @@
+/* 2019_04_03: code at lines 81 to 89 edited: changed default positions of animals
+*/
+
+
+/*##############################################################################################*/
 // treningova faze - uceni se zviratum v postupnych dvojicich ctvercu
 var TXT_UKOL = 1;   // text soucasneho ukolu - najdi kocku napriklad
 var TXT_CTVEREC = 5;   // cislo dvojice ctvercu
@@ -69,18 +74,23 @@ var AnimalPositionsActive = { // ktera zvirata jsou aktivni - maji se pouzivat p
     D:[3],E:[4],F:[2],
     G:[1],H:[4],I:[1]        
 }; 
-var AnimalXYPositions = {  // pozice zvirat abych je mohl skryvat - posouvat a zase zobrazovat
-    A3:{x:-866,y:-835,z:-214},A5:{x:-1353,y:-1071,z:-212}, B2:{x:1351,y:-1027,z:-206}, B6:{x:890,y:-1276,z:-219},
-    C2:{x:3362,y:-1060,z:-255},C5:{x:2738,y:-1053,z:-212}, D3:{x:-848,y:1241,z:-212},D6:{x:-1184,y:760,z:-196},
-    E4:{x:868,y:1250,z:-210},E6:{x:862,y:786,z:-199},F2:{x:3391,y:1014,z:-218},F4:{x:2932,y:1249,z:-208},
-    G1:{x:-864,y:2816,z:-216},G5:{x:-1341,y:3064,z:-226},H1:{x:1171,y:2783,z:-218},H4:{x:854,y:3257,z:-211}, 
-    I1:{x:3241,y:2799,z:-254},I3:{x:3251,y:3290,z:-220}
+
+var AnimalXYPositions = { // pozice zvirat abych je mohl skryvat - posouvat a zase zobrazovat
+    A3:{x:-970,y:-764,z:-214},A5:{x:-1353,y:-1071,z:-212}, B2:{x:1041,y:-725,z:-206}, B6:{x:890,y:-1276,z:-219},
+    C2:{x:3021,y:-743,z:-255},C5:{x:2738,y:-1053,z:-212}, D3:{x:-966,y:1302,z:-212},D6:{x:-1184,y:760,z:-196},
+    E4:{x:1124,y:1241,z:-210},E6:{x:862,y:786,z:-199},F2:{x:3037,y:1290,z:-218},F4:{x:2932,y:1249,z:-208},
+    G1:{x:-873,y:3319,z:-216},G5:{x:-1341,y:3064,z:-226},H1:{x:1171,y:2783,z:-218},H4:{x:1011,y:3192,z:-211}, 
+    I1:{x:3063,y:3242,z:-254},I3:{x:3251,y:3290,z:-220}
+
+
 };
+
+
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
-var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
+var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -138,7 +148,7 @@ var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se 
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {	
-	experiment.setMap("TEST-SleepForest bohaty-ploty_15-9"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
+	experiment.setMap("TEST-SleepForest bohaty-ploty_15-9kopie"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal  
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
