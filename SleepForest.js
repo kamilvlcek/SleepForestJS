@@ -1,3 +1,6 @@
+// 2019-05-03. Line 22: replaced 'MROZE' with 'KACHNU'. Line 27: replaced "Obrazky.walrus" with "Obrazky.duck". Line 78-84: updated AnimalXYPositions.
+
+
 // SpaNav.1-48.jar
 /*##############################################################################################*/
 // GLOBALNI PROMENNE platne kdekoliv ve skriptu
@@ -16,12 +19,12 @@ var SHAPE_ZAMER = 10;     // zamerovaci krouzek
 var AnimalNames= {  // ceske pojmenovani zvirat podle jmen ctvercu a cisel stanu
     A3:'JELENA', B2:'KOLIBRIKA', C2:'ZEBRU', // A5:'ZRALOKA',B6:'SOJKU', C5:'JELENA',
     D3:'PRASE',E4:'KOCKU',F2:'KROKODYLA', //D6:'MEDVEDA',E6:'VLKA', F4:'ZELVU',
-    G1:'MOTYLA',H1:'MROZE', I1:'TUCNAKA' //G5:'VAZKU',H4:'KACHNU',,I3:'KACHNU'
+    G1:'MOTYLA', H1:'KACHNU', I1:'TUCNAKA' //G5:'VAZKU', H1:'MROZE',, H4:'KACHNU'
 };
 var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
     A3:"Obrazky.deer",B2:"Obrazky.hummingbird",C2:"Obrazky.zebra",  //,A5:"Obrazky.shark",B6:"Obrazky.jay",C5:"Obrazky.deer"
     D3:"Obrazky.boar", E4:"Obrazky.cat",F2:"Obrazky.crocodile", //,D6:"Obrazky.bear",E6:"Obrazky.wolf",F4:"Obrazky.turtle"
-    G1:"Obrazky.butterfly", H1:"Obrazky.walrus", I1:"Obrazky.penguin" // , G5:"Obrazky.dragonfly", H4:"Obrazky.whale", I3:"Obrazky.duck"
+    G1:"Obrazky.butterfly", H1:"Obrazky.duck", I1:"Obrazky.penguin" // , G5:"Obrazky.dragonfly", H4:"Obrazky.whale", , H1:"Obrazky.walrus"
 };
 
 // pozice zvirete v TEST-SleepForest Edo12box.ut2: -5386,852,916, kamera -5355 801 954
@@ -73,11 +76,11 @@ var AnimalPositions = { // ve kterych stanech jsou zvirata? - jejich cisla v tom
 };
 */
 var AnimalXYPositions = { // pozice zvirat abych je mohl skryvat - posouvat a zase zobrazovat
-    A3:{x:-970,y:-764,z:-214},B2:{x:1223,y:3377,z:-129},
-    C2:{x:-788,y:3338,z:-190}, D3:{x:-784,y:5404,z:-212},
-    E4:{x:1306,y:5320,z:-257},F2:{x:3219,y:5342,z:-253},
-    G1:{x:-691,y:7421,z:-169},H1:{x:1193,y:7294,z:-254},
-    I1:{x:3245,y:7344,z:-243}
+    A3:{x:-969,y:-764,z:-190},B2:{x:1042,y:-725,z:-129},
+    C2:{x:3022,y:-743,z:-255}, D3:{x:-965,y:1302,z:-212},
+    E4:{x:1125,y:1218,z:-257},F2:{x:3038,y:1240,z:-253},
+    G1:{x:-872,y:3319,z:-134},H1:{x:1012,y:3192,z:-254},
+    I1:{x:3063,y:3242,z:-243}
 };
 
 
@@ -143,7 +146,7 @@ var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se 
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {
-	experiment.setMap("TEST-SleepForest_Hanzlik_v01"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest_Hanzlik_v01_temp02"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
