@@ -1,5 +1,5 @@
 // 2019-05-03. Line 22: replaced 'MROZE' with 'KACHNU'. Line 27: replaced "Obrazky.walrus" with "Obrazky.duck". Line 78-84: updated AnimalXYPositions.
-
+//2019-07-30. LINE 33: PlotyPozice upraveno tak, ze jsou mezi kazdym ctvercem dva ploty. LINE 49: SquarePassage upraveno stejne tak. LINE 397: funkce ZvirataSchovej(0) vymenena za ZvirataSchovej(2)
 
 // SpaNav.1-48.jar
 /*##############################################################################################*/
@@ -30,11 +30,12 @@ var AnimalPictures = { // jmena textur - obrazku zvirat  zobrazeni
 // pozice zvirete v TEST-SleepForest Edo12box.ut2: -5386,852,916, kamera -5355 801 954
 
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
-    AB:{x:106,y:-2354}, AD:{x:491,y:46},
-    BC:{x:2117,y:-2381}, BE:{x:2489,y:50},
-    CF:{x:4484,y:47}, DE:{x:106,y:-353}, DG:{x:491,y:2052},
-    EF:{x:2117,y:-347}, EH:{x:2489,y:2055},
-    FI:{x:4484,y:2056}, GH:{x:106,y:1656}, HI:{x:2117,y:1650}
+    AB1:{x:-219,y:-2354}, AB2:{x:347,y:-2322}, AD1:{x:492,y:-238}, AD2:{x:524,y:309},
+    BC1:{x:1812,y:-2381}, BC2:{x:2342,y:-2349}, BE1:{x:2489,y:-222}, BE2:{x:2522,y:276},
+    CF1:{x:4485,y:-249}, CF2:{x:4517,y:346}, DE1:{x:-201,y:-353}, DE2:{x:419,y:-321},
+    DG1:{x:492,y:1807}, DG2:{x:524,y:2337}, EF1:{x:1862,y:-347}, EF2:{x:2361,y:-317},
+    EH1:{x:2490,y:1749}, EH2:{x:2522,y:2288}, FI1:{x:4485,y:1757}, FI2:{x:4517,y:2273},
+    GH1:{x:-153,y:1656}, GH2:{x:336,y:1688}, HI1:{x:1800,y:1650}, HI2:{x:2356,y:1651},
 };
 
 var PlotyPozice2 = { // ploty na kraji, ktere musi zmizet pri testu
@@ -46,13 +47,13 @@ var PlotyPozice2 = { // ploty na kraji, ktere musi zmizet pri testu
 };
 
 var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sousedicich ctvercu
-    AB:['AB'],	BA:['AB'], AD:['AD'],	DA:['AD'],
-    BC:['BC'],	CB:['BC'], BE:['BE'],	EB:['BE'],
-    CF:['CF'],	FC:['CF'],
-    DE:['DE'],	ED:['DE'], DG:['DG'],	GD:['DG'],
-    EF:['EF'],	FE:['EF'], EH:['EH'],	HE:['EH'],
-    FI:['FI'],	IF:['FI'],
-    GH:['GH'],	HG:['GH'], HI:['HI'],	IH:['HI']
+    AB:['AB1','AB2'],	BA:['AB1','AB2'], AD:['AD1','AD2'],	DA:['AD1','AD2'],
+    BC:['BC1','BC2'],	CB:['BC1','BC2'], BE:['BE1','BE2'],	EB:['BE1','BE2'],
+    CF:['CF1','CF2'],	FC:['CF1','CF2'],
+    DE:['DE1','DE2'],	ED:['DE1','DE2'], DG:['DG1','DG2'],	GD:['DG1','DG2'],
+    EF:['EF1','EF2'],	FE:['EF1','EF2'], EH:['EH1','EH2'],	HE:['EH1','EH2'],
+    FI:['FI1','FI2'],	IF:['FI1','FI2'],
+    GH:['GH1','GH2'],	HG:['GH1','GH2'], HI:['HI1','HI2'],	IH:['HI1','HI2']
 }; // kter� z plot� se m� odstranit pro pr�chod mezi �tverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
 
 var SquareDirections={ // jakym smerem se prochazi mezi dvema ploty, S Z J V - svetove strany
@@ -146,7 +147,7 @@ var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se 
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {
-	experiment.setMap("TEST-SleepForest_Hanzlik_v01_temp02"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest_Hanzlik_v01"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
@@ -393,7 +394,7 @@ function ActivateSquares(iPhase){
     // vola se z NextTrial
     // iPhase je cislo uz nove faze, inkrementovano predtim
      if(DoTest){  // ****************** TEST  ******************
-       ZvirataSchovej(0); // skryju vsechna zvirata - po kazdem vstupu do cile, protoze ukazuju aktivni zvire
+       ZvirataSchovej(2); // skryju vsechna zvirata - po kazdem vstupu do cile, protoze ukazuju aktivni zvire
        if(iPhase==0) {
          PlotPosun(-1,0); // v prvni fazi skryje vsechny ploty
        }
