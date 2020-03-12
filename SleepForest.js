@@ -1,5 +1,10 @@
 // 2019-05-03. Line 22: replaced 'MROZE' with 'KACHNU'. Line 27: replaced "Obrazky.walrus" with "Obrazky.duck". Line 78-84: updated AnimalXYPositions.
 //2019-07-30. LINE 33: PlotyPozice upraveno tak, ze jsou mezi kazdym ctvercem dva ploty. LINE 49: SquarePassage upraveno stejne tak. LINE 397: funkce ZvirataSchovej(0) vymenena za ZvirataSchovej(2)
+//2020-03-09: All usage of function "ZvirataSchovej" was commented out (except the definition)
+
+
+
+
 
 // SpaNav.1-48.jar
 /*##############################################################################################*/
@@ -10,6 +15,7 @@ var TXT_SEKVENCE = 2; // cislo zvirete v sekvenci
 var TXT_CHYBPOCET = 3; // cislo zvirete v sekvenci
 var TXT_CHYBA = 4; // cislo zvirete v sekvenci
 var TXT_INSTRUKCE = 6; // instrukce uprostred obrazovky
+var TXT_INSTRUKCE_ADD = '' // doplnujici instrukce uprostred obrazovky
 var TXT_INSTRUKCE_MALE = 7; // instrukce uprostred obrazovky
 var TXT_SEKUNDY = 8; // cas do ukonceni prozkoumavani dvojice ctvercu
 var TXT_DEBUG = 9; // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
@@ -89,7 +95,7 @@ var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod
 var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
 var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
-var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
+var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -147,7 +153,7 @@ var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se 
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {
-	experiment.setMap("TEST-SleepForest_Hanzlik_v01"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest_Hanzlik_temp"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
@@ -165,6 +171,7 @@ function run() {
         text.create(TXT_CHYBPOCET, ScreenX-500, 110, 255,0,0, 3, ""); // pocet chyb - CHYB
         text.create(TXT_CHYBA, 1000, 10, 255, 0,0, 4, ""); // ohlaseni chyby
         text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
+        text.create(TXT_INSTRUKCE_ADD, 220, 500, 255, 255, 255, 3, "");
         text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
         text.create(TXT_SEKUNDY, ScreenX - 160, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
         if(Debug)  text.create(TXT_DEBUG,   ScreenX - 150, 60, 255, 255, 255, 3, "" ); // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
@@ -202,6 +209,7 @@ function run() {
 	if (IsPauza && key.pressed("space")){
 	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
+        text.modify(TXT_INSTRUKCE_ADD, '') // skryje doplnujici instrukce uprostred obrazovky
         experiment.setPlayerRotationVertical(0);  // subjekt se diva zase pred sebe
         experiment.enablePlayerRotation(true); // povolim otaceni
         experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy
@@ -262,7 +270,7 @@ function run() {
         debug.log("vstup cislo "+AimEntrances[AimNo14()]);
       } else {
         TestEntrances += 1;
-        ZvirataSchovej(1); //ukaze aktivni zvire
+        //ZvirataSchovej(1); //ukaze aktivni zvire
       }
 	}
 
@@ -394,7 +402,7 @@ function ActivateSquares(iPhase){
     // vola se z NextTrial
     // iPhase je cislo uz nove faze, inkrementovano predtim
      if(DoTest){  // ****************** TEST  ******************
-       ZvirataSchovej(2); // skryju vsechna zvirata - po kazdem vstupu do cile, protoze ukazuju aktivni zvire
+       //ZvirataSchovej(2); // skryju vsechna zvirata - po kazdem vstupu do cile, protoze ukazuju aktivni zvire
        if(iPhase==0) {
          PlotPosun(-1,0); // v prvni fazi skryje vsechny ploty
        }
@@ -405,7 +413,7 @@ function ActivateSquares(iPhase){
           experiment.setStop();
        }
      }  else {    // ****************** TRENING     ******************
-       ZvirataSchovej(2); // skryju nepouzivana zvirata - podle AnimalPositionsActive
+       //ZvirataSchovej(2); // skryju nepouzivana zvirata - podle AnimalPositionsActive
        if(iPhase>0){
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
           PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi
@@ -432,7 +440,8 @@ function ActivateSquares(iPhase){
        }
 
        // pauza pred novou dvojici ctvercu
-       text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU");
+       text.modify(TXT_INSTRUKCE,"NOVA DVOJICE CTVERCU.");
+       text.modify(TXT_INSTRUKCE_ADD, "ZMACKNETE MEZERNIK");
        experiment.setPlayerRotationVertical(270);  // subjekt se diva nahoru do nebe
        experiment.enablePlayerRotation(false); // zakazu i otaceni na dobu pauzy
        experiment.enablePlayerMovement(false); // zakazu chuzi na dobu pauzy
