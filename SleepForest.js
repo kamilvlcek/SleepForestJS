@@ -43,7 +43,6 @@ var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
     EH1:{x:2490,y:1749}, EH2:{x:2522,y:2288}, FI1:{x:4485,y:1757}, FI2:{x:4517,y:2273},
     GH1:{x:-153,y:1656}, GH2:{x:336,y:1688}, HI1:{x:1800,y:1650}, HI2:{x:2356,y:1651},
 };
-
 var PlotyPozice2 = { // ploty na kraji, ktere musi zmizet pri testu
     A1:{x:491,y:-1947}, A2:{x:-1878,y:-2359},
     B:{x:2489,y:-1949}, C1:{x:4484,y:-1949}, C2:{x:4109,y:-2371},
@@ -153,7 +152,7 @@ var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se 
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {
-	experiment.setMap("TEST-SleepForest_Hanzlik_temp"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest_Hanzlik_plain"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
