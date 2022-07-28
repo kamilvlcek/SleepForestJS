@@ -59,7 +59,7 @@ var SquarePassage={  // jake ploty se maji zvednout pro pruchod mezi dvojici sou
     EF:['EF1','EF2'],	FE:['EF1','EF2'], EH:['EH1','EH2'],	HE:['EH1','EH2'],
     FI:['FI1','FI2'],	IF:['FI1','FI2'],
     GH:['GH1','GH2'],	HG:['GH1','GH2'], HI:['HI1','HI2'],	IH:['HI1','HI2']
-}; // kter� z plot� se m� odstranit pro pr�chod mezi �tverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
+}; // ktere z plotu se m? odstranit pro pr?chod mezi ?tverci, napr PlotE4 a PlotD2 pro pruchod mezi D a E
 
 var SquareDirections={ // jakym smerem se prochazi mezi dvema ploty, S Z J V - svetove strany
     AB:['V'],	  BA:['Z'], AD:['J'],	DA:['S'],
@@ -91,10 +91,10 @@ var AnimalXYPositions = { // pozice zvirat abych je mohl skryvat - posouvat a za
 
 
 var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
-var PlotHiddenZ = -854;  // vyska plotu schovaneho    0= nad stany, -400 = pod podlahou -260 - da se prekrocit
-var PlotShownZ = -654;  // vyska plotu ukazaneho  -222;
+var PlotHiddenZ = -854;  // vyska plotu schovaneho // stare udaje 0= nad stany, -400 = pod podlahou -260 - da se prekrocit
+var PlotShownZ = -654;  // vyska plotu ukazaneho ;
 var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
-var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
+var Debug = 1; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 
 var StartSubjectPositions = {
     A:{x:-1053,y:-918}, B:{x:1037,y:-918}, C:{x:3081,y:-918},
@@ -118,7 +118,7 @@ var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName
 var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
 var AnimalName = 'Animal'; // zacatek jmena kazdeho zvirete
 
-var iPhase = 0;   // aktualni cislo faze
+var iPhase = 0;   // aktualni cislo faze (jedna dvojice ctvercu) , index v SquarePairs a TestSequence 
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi
 var Nalezenych = 0;  // pocet nalezenych cilu, pokud v testu nenajde cil, nesedi to s iPhase ani iSekvence
 var ActiveAimName = ''; // jmeno aktualniho aktivniho cile napr AimB2  - AimName+SquareName+AimNo, nastavi se po kazdem stlaceni mezerniku
@@ -146,13 +146,13 @@ var SquarePairsToAdd = 8; // kole dvojic se ma na konci jeste pridat, pokud prek
 var SquarePairsAdded = 0; // kolik uz bylo pridano dvojic ctvercu na konci treningu
 var IsPauza = false; // jestli jej prave ted pauza  - mezi dvojicemi ctvercu v treningu nebo po uplynuti limitu pro nalezeni cile v testu
 var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
-var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skrytu plotu a pocatecni exploraci
+var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skryti plotu a pocatecni exploraci
 var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
-var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na 60 a pak se odecita
+var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na CasZkoumej a pak se odecita
 var CasZkoumejStart = 0; //  date object zacatku pocitani
 
 function init() {
-	experiment.setMap("TEST-SleepForest_Hanzlik_plain"); //   TEST-SleepForest Edo3   TEST-drf3aapaOCDCube     TEST-SleepForest Minimal
+	experiment.setMap("TEST-SleepForest_Marks");  // TEST-SleepForest_Marks - 1.7.2022 - 4 znacky + kompas v kazdem cverci, platforma pod lesem  
 }
 // --------------------------- RUN -----------------------------------------------
 function run() {
@@ -192,7 +192,7 @@ function run() {
         IsInAim = '';
         debug.log('left: ANY manually');
     }
-    if (key.pressed('n')){ // takhle muzu skakat na dalsi
+    if (key.pressed('n')){ // takhle muzu skakat na dalsi fazi
         NextTrial(true);    // zvysim cislo faze
         ActivateAnimal(iPhase,iSequence);
     }
@@ -206,27 +206,31 @@ function run() {
 	  }
 
 	if (IsPauza && key.pressed("space")){
-	  if(!DoTest){  // trening - pauza mezi dvojicemi ctvercu - jeji konec zmacknutim mezerniku
+    // konec pauzy zmacknutim mezerniku
+	  if(!DoTest){  
+        // trening - pauza mezi dvojicemi ctvercu
         text.modify(TXT_INSTRUKCE,"");      // skryje  velkou instrukci uprostred obrazovky
         text.modify(TXT_INSTRUKCE_ADD, '') // skryje doplnujici instrukce uprostred obrazovky
         experiment.setPlayerRotationVertical(0);  // subjekt se diva zase pred sebe
         experiment.enablePlayerRotation(true); // povolim otaceni
         experiment.enablePlayerMovement(true); // povolim chuzi po dobe pauzy
-        if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){  //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
+        if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu){  
+            //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
             ActiveN =  GetActiveNames(); // vrati jmena aktivniho cile a teepee , nastavi take ActiveAimName a ActiveTeepee
             ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);  // aktivuje aktualni cil i ostatni cile jako avoidance
             text.modify(TXT_UKOL,TXT_UKOL_Last);    // vypise ukol na obrazovku smazany behem pauzy - Prozkoumej tuto dvojici ctvercu
             ShowAnimalPicture(ActiveN.ActiveTeepee, false); // skryje obrazek ciloveho zvirete
 
-            //timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne - 28.8.2017 - nechci mi dva ruzne casovace na to same - muzou merit cas ruzne rychle
             CasZkoumejZbyva = CasZkoumej; // zacnu odecitat cas
-            timer.set("CasZkoumejZbyva",1); // nastavim casovac na jednu vterinu
+            timer.set("CasZkoumejZbyva",1); // nastavim casovac s intervalem jedna vterina
+            //timer.set("CasZkoumej",CasZkoumej); // nastavim casovac, nez cas volneho zkoumani uplyne - 28.8.2017 - nechci mi dva ruzne casovace na to same - muzou merit cas ruzne rychle
             text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
             CasZkoumejStart = new Date();
         } else {
             SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
         }
-      } else { // test - pauza po uplynuti limitu pro nalezeni cile
+      } else { 
+         // test - pauza po uplynuti limitu pro nalezeni cile
          text.modify(TXT_INSTRUKCE_MALE,""); // skryju napis, ze se nepovedlo najit cil
          ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
          experiment.enablePlayerMovement(true); // povolim chuzi pro dalsi trial
@@ -250,7 +254,7 @@ function run() {
 
     // VSTUP A VYSTUP DO/Z AKTIVNIHO CILE   - vzdy jen jeden
 	if (IsInAim=="" && preference.get(ActiveAimName).entered() && CasZkoumejZbyva <= 0 ){
-      // vstup do ciloveho mista
+      // vstup do ciloveho mista, ne pri volnem prozkoumavani dvojic ctvercu
       debug.log("entered Aim: "+ActiveAimName);
       experiment.logToTrackLog("Aim entrance:"+ActiveAimName);
       IsInAim = ActiveAimName;  // napriklad 'AimE4'
@@ -319,7 +323,8 @@ function run() {
 function timerTask(name) {
 	if (name == "novectverce"){
 	   text.modify(TXT_INSTRUKCE,"");
-	} else if (name=="testlimit_"+iPhase){  // bude true, jen pokud dobehnuty timer odpovida aktivni fazi
+	} else if (name=="testlimit_"+iPhase){ // limit na nalezeni zvirete  
+      // bude true, jen pokud dobehnuty timer odpovida aktivni fazi
       debug.log("Aim not found: "+ActiveAimName + ", iPhase: "+iPhase);
       experiment.logToTrackLog("Aim not found:"+ActiveAimName + ", iPhase: "+iPhase);
       TXT_UKOL_Last = "NEPOVEDLO SE VAM NAJIT CIL V CASOVEM LIMITU";
@@ -336,7 +341,7 @@ function timerTask(name) {
         preference.get(InactiveNames[iaim]).setActive(false);
       }
     } else if(name=='CasZkoumejZbyva'){    // casovac pouze na odpocitavani do konce, kazdou vterinu
-      CasZkoumejTed = new Date(); // aktualni datetime
+      CasZkoumejTed = new Date(); // aktualni datetime v ms
       CasZkoumejZbyva = Math.round(CasZkoumej - (CasZkoumejTed-CasZkoumejStart)/1000);  // odectu pocet vyprsenych vterin
       if(CasZkoumejZbyva>0) {
         timer.set("CasZkoumejZbyva",1); // nastavim casovac znova
@@ -359,7 +364,8 @@ function timerTask(name) {
          TimerCycle++; // pricitam jen nenulove souradnice
          if(TimerCycle>1) { // po prve je cislo 1, to jeste nechci, muze byt nespravne
           	if(IsInSquare != ''){
-              sleft = SquareLeft(XX,YY);
+              // pokud je v nejakem ctverci
+              sleft = SquareLeft(XX,YY);   // vraci udaj, kterym smerem odesel ze ctverce Z|V|S|J
               if(sleft !=false){
                  debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);
                  ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel - trening i test
@@ -383,7 +389,7 @@ function timerTask(name) {
                  if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));
               }
             } else {
-              se = SquareEntered(XX,YY);
+              se = SquareEntered(XX,YY);   // vraci jmeno ctverce, ve kterem clovek je, nebo false, pokud je mimo ctverec
               if(se != false) {
                  debug.log('vesel do ctverce '+se);
                  IsInSquare = se; // uz je ve ctverci
@@ -402,10 +408,10 @@ function ActivateSquares(iPhase){
     // iPhase je cislo uz nove faze, inkrementovano predtim
      if(DoTest){  // ****************** TEST  ******************
        //ZvirataSchovej(2); // skryju vsechna zvirata - po kazdem vstupu do cile, protoze ukazuju aktivni zvire
-       if(iPhase==0) {
-         PlotPosun(-1,0); // v prvni fazi skryje vsechny ploty
+       if(iPhase==0) { // volano z experiment.isStarted()
+         PlotPosun(-1,0); //  skryje vsechny ploty - posune je dolu
        }
-       if(iPhase>=TestSequence.length) {
+       if(iPhase>=TestSequence.length) {   //  sekvence ctvercu a cisel zvirat specificka pro test
           text.modify(TXT_INSTRUKCE,"KONEC");
           debug.log('konec');
           experiment.logToTrackLog("Entrances:" + iPhase  );
@@ -413,9 +419,9 @@ function ActivateSquares(iPhase){
        }
      }  else {    // ****************** TRENING     ******************
        //ZvirataSchovej(2); // skryju nepouzivana zvirata - podle AnimalPositionsActive
-       if(iPhase>0){
+       if(iPhase>0){    // ne volano z experiment.isStarted()
            // pokud uz druha a dalsi faze, nejdriv zase obnovim ploty
-          PlotPosun(iPhase-1,1); // ukaze plot v predchozi fazi
+          PlotPosun(iPhase-1,1); // ukaze ploty z predchozi faze treningu
        }
 
        if(iPhase>=SquarePairs.length) {
@@ -432,7 +438,7 @@ function ActivateSquares(iPhase){
           experiment.setStop();
        } else {
          // skryju ploty mezi novymi ctverci
-         PlotPosun(iPhase,0); // skryje plot v teto fazi
+         PlotPosun(iPhase,0); // skryje plot v teto fazi treningu
          AimEntrances = [0,0,0,0];  // pocitam vstupy do oblasti znova
          PresunHrace(iPhase);
          SetSquarePairErrors(iPhase,0);
@@ -466,7 +472,7 @@ function ActivateAnimal(iPhase,iSequence){
      } else if(CasZkoumej > 0 && iPhase < RuznychDvojicCtvercu && iSequence==0){ // pouze prvni opakovani dvojice ctvercu a pouze prvni trial v sekvenci
         //clovek bude po CasZkoumej vterin volne prozkoumavat dvojici ctvercu - novinka 8.2017
         TXT_UKOL_Last = "Prozkoumej tuto dvojici ctvercu";
-        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);   //aktivuj =false
+        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,false);   //aktivuj =false  - deaktivuje aktualni cil
         // casovac nastavim az po uplynuti pauzy (na zacatku nove dvojice ctvercu v treningu)
      } else {
         TXT_UKOL_Last = "Najdi "+AnimalNames[ActiveN.ActiveTeepee];
@@ -538,10 +544,11 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
           PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
           debug.log("Ploty neviditelne");
        }  else {
-          PlotyZmiz(false);
+          PlotyZmiz(false);  // zobrazi vsechny ploty
           debug.log("Ploty viditelne");
        }
      } else {
+        // deaktivuju aktivni cile
         debug.log('ActiveAimName off: '+ActiveAimName);
         preference.get(ActiveAimName).setActive(false);         // cilova oblast se udela aktivni
         preference.get(ActiveAimName).beepOff(true);           // cilova oblast nema delat zvuk samo osobe
@@ -639,8 +646,8 @@ function CtverecJmeno(){
      if (DoTest){
         var SquareName = TestSequence[iPhase][ TestSequence[iPhase][3] ]; // jmeno ctverce do ktereho je treba dojit
      } else {
-        var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile v ramci ctverce
-        var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  // SquarePairs se sekvence dvojic ctvercu
+        var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile v ramci ctverce - 28.7.2022 - jen dve moznosti 0 nebo 10
+        var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  // SquarePairs se sekvence dvojic ctvercu 
      }
      return SquareName;
 }
@@ -659,25 +666,29 @@ function PlotPosun(iiPhase,ukaz){
      // schova ploty tak,ze se pres ne da chodit - zasune je pod podlahu
      if (iiPhase >= 0){
        // kvuli pruchodu v jedne fazi treningu
-       var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // napriklad DE
-       for(p=0; p<SquarePassage[CtverceDvojice].length; p++){
-         var CtverecName = SquarePassage[CtverceDvojice][p];    // napriklad postupne D2 a E4
-         var PlotZmiz = PlotName + CtverecName;   // napriklad PlotD2
+       // jen Trening
+       var CtverceDvojice =  SquarePairs[iiPhase][0]+ SquarePairs[iiPhase][1]; // jmena dvou sousednich ctvercu, napriklad DE
+         // SquarePairs definovany v SleepForestTrening.js
+       for(p=0; p<SquarePassage[CtverceDvojice].length; p++){  // pro vsechny ploty mezi jednou dvojici ctverc
+         var CtverecName = SquarePassage[CtverceDvojice][p];    // napriklad postupne 'AB1','AB2'
+         var PlotZmiz = PlotName + CtverecName;   // napriklad PlotAB1
          //mark.get(PlotZmiz).setVisible(true);
          debug.log( (ukaz?"ukaz: ":"skryj: ") + PlotZmiz );
-         if (PlotyPozice[CtverecName]!=undefined){
-           var CtverecPozice = PlotyPozice[CtverecName];
-           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222
+         if (PlotyPozice[CtverecName]!=undefined){  // pokud je definovana pozice
+           var CtverecPozice = PlotyPozice[CtverecName];   // xy pozice plotu
+           // tady plot posunu nahoru nebo dolu
+           mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // hidden je pod podlahou
          }
        }
        if(ukaz==0) experiment.logToTrackLog("Square Pair: "+CtverceDvojice);
-    } else { // iiPhase < 0 - TEST
+    } else { // iiPhase < 0,  jen TEST
        // vsechny ploty kterymi hybam v treningu
-       for(var key in PlotyPozice){
+       for(var key in PlotyPozice){  // pres vsechny ploty
           var PlotZmiz = PlotName + key;
           var CtverecPozice = PlotyPozice[key];
-          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // 0 bude nahore, normalni je -222
+          mark.get(PlotZmiz).setLocation([CtverecPozice.x,CtverecPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]); // hidden je pod podlahou
        }
+       // ploty na kraji, ktere musi zmizet pri testu
        for(var key in PlotyPozice2){
           var PlotZmiz = PlotName + key;
           var CtverecPozice = PlotyPozice2[key];
@@ -692,6 +703,7 @@ function PlotyZmiz(skryj){
         var CtverecPozice = PlotyPozice[key];
         mark.get(PlotZmiz).setVisible(!skryj); // viditelne nebo ne, podle ukaz
     }
+    // ploty na kraji, ktere musi zmizet pri testu
     for(var key in PlotyPozice2){
        var PlotZmiz = PlotName + key;
        var CtverecPozice = PlotyPozice2[key];
@@ -785,6 +797,7 @@ function SquarePairsAddRepeat(pocetpridat){
 function AnimalSequenceIndex(iiPhase){
    // funkce ktera vraci index v poli  AnimalSequence
    return iiPhase  % AnimalSequence.length; // zbytek po deleni delkou - od 0 do n-1, bude se porad opakovat
+   // 28.7.2022 -  AnimalSequence.length = 1, takze    AnimalSequenceIndex = 0
 }
 function SkryjNapisy(skryj){
    // behem pauzy skryje obrazek zvirete na obrazovce a text TXT_UKOL
@@ -817,6 +830,7 @@ function NextTrial(nextPhase){
     text.modify(TXT_SEKVENCE,"NALEZENO:" + Nalezenych);
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );
 }
+
 function Zamerovac(){
   // zamerovaci kruh - 21.4.2017
    var ScreenX = experiment.getScreenX(); // 1680;//

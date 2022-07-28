@@ -1,4 +1,4 @@
-// TEST - nastaveni sekvence ctverctu a zvirat v nich
+// TEST - nastaveni sekvence ctverecku a zvirat v nich
 var TestSequence = [ 
 ['A','B',1,1],
 ['C','D',1,0],
