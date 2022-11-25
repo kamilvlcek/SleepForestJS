@@ -117,6 +117,8 @@ var AllSquares = ['A','B','C','D','E','F','G','H','I'];
 var AimName = 'Aim'; //jmeno cile - zacatek ActiveAimName
 var PlotName = 'Plot'; // zacatek jmena kazdeho plotu
 var AnimalName = 'Animal'; // zacatek jmena kazdeho zvirete
+var CompasName = 'CeduleSever';  // Cedule ukazujici sever (alias Kompas)
+var MarkName = 'Mark'; //  4 objekty orientacnich znacek, MarkA1 až MarkA4, MarkB1 až MarkB4 atd
 
 var iPhase = 0;   // aktualni cislo faze (jedna dvojice ctvercu) , index v SquarePairs a TestSequence 
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi
@@ -150,6 +152,7 @@ var RuznychDvojicCtvercu = 8; // kolik je ruznych dvojic - pouziva se na skryti 
 var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
 var CasZkoumejZbyva = 0; // kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na CasZkoumej a pak se odecita
 var CasZkoumejStart = 0; //  date object zacatku pocitani
+var SquareStart = ''; // jmeno ctverce kde zacina hledani zvirete. Plni se v  ActivateAnimal
 
 function init() {
 	experiment.setMap("TEST-SleepForest_Marks");  // TEST-SleepForest_Marks - 1.7.2022 - 4 znacky + kompas v kazdem cverci, platforma pod lesem  
@@ -295,14 +298,17 @@ function run() {
         debug.log("entered Avoid: "+InactiveNames[iaim]);
         experiment.logToTrackLog("Avoid entrance:"+InactiveNames[iaim]);
         IsInAim = InactiveNames[iaim];
-        text.modify(TXT_CHYBA,"CHYBA !");
-        //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
-        preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
-        if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud je cas na zkoumani, pocitam chyby od zacatku
-          ZapocitejChybu();
-        }
-        experiment.logToTrackLog("Errors:"+ErrorsNumber);
-        InactiveEntered = InactiveNames[iaim];
+        //if (SquareStart != IsInSquare){ // pokud uz vysel ze ctverce, kde zacinal
+          text.modify(TXT_CHYBA,"CHYBA !");
+          //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
+          preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
+          if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud test, nebo uz vstoupil do cile, nebo prozkoumava dvojici ctvercu 
+            // pokud je cas na zkoumani, pocitam chyby od zacatku
+            ZapocitejChybu();
+          }
+          experiment.logToTrackLog("Errors:"+ErrorsNumber);
+          InactiveEntered = InactiveNames[iaim];
+        //}
       }
     }
   }
@@ -365,9 +371,10 @@ function timerTask(name) {
          if(TimerCycle>1) { // po prve je cislo 1, to jeste nechci, muze byt nespravne
           	if(IsInSquare != ''){
               // pokud je v nejakem ctverci
-              sleft = SquareLeft(XX,YY);   // vraci udaj, kterym smerem odesel ze ctverce Z|V|S|J
-              if(sleft !=false){
-                 debug.log('odesel ze ctverce '+IsInSquare+ ' na '+sleft);
+              s_left = SquareLeft(XX,YY);   // vraci udaj, kterym smerem odesel ze ctverce Z|V|S|J
+              if(s_left !=false){
+                 debug.log('odesel ze ctverce '+IsInSquare+ ' na '+s_left);
+                 experiment.logToTrackLog("Square left: "+se);
                  ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel - trening i test
                  if(!DoTest && CasZkoumejZbyva <= 0 && IsPauza == false) { // TRENING a neni prozkoumavani na zacatku
                     if(SquarePairs[iPhase][0]==IsInSquare) {  // zajima me smer z jakeho do jakeho ctverce ve dvojici jde jde
@@ -376,9 +383,9 @@ function timerTask(name) {
                       var CtverceDvojice =  SquarePairs[iPhase][1]+ SquarePairs[iPhase][0]; // napriklad ED
                     }
                     debug.log("CtverceDvojice: "+CtverceDvojice);
-                    if(SquareDirections[CtverceDvojice]!=sleft){
-                      debug.log("left in incorrect direction: "+IsInSquare + '-' + sleft);
-                      experiment.logToTrackLog("Incorrect Direction: "+IsInSquare + '-' + sleft);
+                    if(SquareDirections[CtverceDvojice]!=s_left){
+                      debug.log("left in incorrect direction: "+IsInSquare + '-' + s_left);
+                      experiment.logToTrackLog("Incorrect Direction: "+IsInSquare + '-' + s_left);
                       text.modify(TXT_CHYBA,"CHYBA !");
                       preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
                       ZapocitejChybu(); // vlozi chybu do  ErrorsNumber a SetSquarePairErrors
@@ -389,10 +396,11 @@ function timerTask(name) {
                  if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));
               }
             } else {
-              se = SquareEntered(XX,YY);   // vraci jmeno ctverce, ve kterem clovek je, nebo false, pokud je mimo ctverec
-              if(se != false) {
-                 debug.log('vesel do ctverce '+se);
-                 IsInSquare = se; // uz je ve ctverci
+              s_entered = SquareEntered(XX,YY);   // vraci jmeno ctverce, ve kterem clovek je, nebo false, pokud je mimo ctverec
+              if(s_entered != false) {
+                 debug.log('vesel do ctverce '+s_entered);
+                 experiment.logToTrackLog("Square entered: "+s_entered);
+                 IsInSquare = s_entered; // uz je ve ctverci
                  ActivateAvoidace(true); // aktivuje vsechny stany v aktivnim ctverci jako avoidance - trening i test
                  text.modify(TXT_CHYBA,"");  // kdyz tam zustane napis z opusteni ctverce spatnym smerem pri treningu
                  if(Debug)  text.modify(TXT_DEBUG, IsInSquare + "-" + ActiveAimName.substring(3,5));
@@ -462,7 +470,8 @@ function ActivateAnimal(iPhase,iSequence){
 
      // OBRAZEK A TEXT KAM NAVIGOVAT
      if(DoTest) { // v testu ma nejdriv ukazat na cil
-        PresunHrace(iPhase);
+        PresunHrace(iPhase);        
+        OrientationMarksHide(iPhase); // zobraz skryj orientacni znacky / kompasy podle TestSequence[4-5]
         TXT_UKOL_Last = "Ukaz na "+AnimalNames[ActiveN.ActiveTeepee];
         Ukazal = false;
         experiment.enablePlayerMovement(false); // zakazu chuzi
@@ -484,6 +493,7 @@ function ActivateAnimal(iPhase,iSequence){
      if(IsPauza && !DoTest) {   // pauza - mezi dvojicemi ctvercu v treningu - nastavuje se v ActivateSquares
          SkryjNapisy(true);  // behem pauzy skryje obrazek zvirete na obrazovce a text TXT_UKOL
      }
+     SquareStart = IsInSquare; // ulozim si nazev ctverce, kde zacinal 
 
 }
 function GetActiveNames(checksquare) {
@@ -656,7 +666,7 @@ function CtverecJmeno(){
 }
 function AimNo14(){     // vrati cislo zvirete 0 - 3
      if(DoTest) return 0; // aby nevznikla chyba, ale nepotrebuju cislo
-     var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile
+     var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // AnimalSequence[0][] = 1 nebo 10;
      var AimNo01 = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence] % 10;   // cislo cile, zbytek po deleni 10ti , 0 nebo 1
      if (AimNo < 10){
         return AimNo01;   // zvirata v prvnim ctverci budou mit cisla 0 a 1
@@ -738,6 +748,21 @@ function ZvirataSchovej(ukaz){
              //debug.log('ZvirataSchovej: zobrazeno'+ZvireJmeno );
           //}
        }
+    }
+}
+function OrientationMarksHide(iiPhase){
+    for(j=0; j<AllSquares.length;j++){
+        // cyklus pres vsechny ctverce
+        KompasJmeno = CompasName + AllSquares[j];    // napr. CeduleSeverA
+        mark.get(KompasJmeno).setVisible(TestSequence[iiPhase][4]); // zobrazim / skryju kompas
+        for (m = 1; m<=4;m++){
+          // cyklus pres 4  znacky ve ctverci
+          MarkJmeno =   MarkName+ AllSquares[j]+m; // napr. MarkA1  
+          MarkObject = mark.get(MarkJmeno);
+          if(MarkObject!=undefined){
+            MarkObject.setVisible(TestSequence[iiPhase][5]); // zobrazim / skryju znacku
+          }
+        } 
     }
 }
 function PresunHrace(iiPhase){
