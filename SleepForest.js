@@ -1,10 +1,11 @@
 // 2019-05-03. Line 22: replaced 'MROZE' with 'KACHNU'. Line 27: replaced "Obrazky.walrus" with "Obrazky.duck". Line 78-84: updated AnimalXYPositions.
 //2019-07-30. LINE 33: PlotyPozice upraveno tak, ze jsou mezi kazdym ctvercem dva ploty. LINE 49: SquarePassage upraveno stejne tak. LINE 397: funkce ZvirataSchovej(0) vymenena za ZvirataSchovej(2)
 //2020-03-09: All usage of function "ZvirataSchovej" was commented out (except the definition)
+//2022-08-01: nova funkce OrientationMarksHide na schovani kompasu a/nebo orientacnich znacek pri testu
+//2022-11-25 v testu jsou vsecha zvirata skryta    ZvirataSchovej (0)
 
 
-
-
+// rozliseni NUDZ 1680*1050
 
 // SpaNav.1-48.jar
 /*##############################################################################################*/
@@ -129,7 +130,7 @@ var ActiveTeepee = ''; // oznaceni aktualniho ctverce k navigaci , napr B2
 var AnimalPicturesHandles = {}; // pole handelu obrazku zvirat - jestli byla uz pouzita textura nebo ne
 var AnimalHandleLast = 0; // posledni prirazeny handle obrazku v  AnimalPicturesUsed
 //var ScreenShapeHandleLast = 0; // posledni zobrazene zvire - abych ho mohl docasne schovat
-var TXT_UKOL_Last = ""; // posledni instrukce
+var TXT_UKOL_Last = ""; // posledni instrukce , napr Najdi Prase
 var InactiveNames = []; // jmena vsechn neaktivnich zvirat, kam dojit je chyba napr AimA3
 var InactiveEntered = ''; // jmeno mista, do ktereho vstoupil omylem
 var ErrorsNumber = 0;       // pocet chyb v sekvenci   - zveda se po vstupu do spatneho stanu
@@ -166,7 +167,7 @@ function run() {
 		experiment.setPlayerSpeed(440);
 
 		//platform.get("plosina").doRotateTime(10000,5,-1);
-        var ScreenX = experiment.getScreenX();
+        var ScreenX = experiment.getScreenX();        
         text.create(TXT_UKOL, 10, 10, 255, 255,0, 3, ""); // nazev aktivniho mista - zluta
         text.create(TXT_CTVEREC, ScreenX-500, 10, 0, 0,255, 3, ""); // cislo ctverce - KOLO
         text.create(TXT_SEKVENCE, ScreenX-500, 60, 0, 255,0, 3, ""); // cislo zvirete v sekvenci   - NALEZENO
@@ -182,6 +183,10 @@ function run() {
         ActivateSquares(iPhase); //
         ActivateAnimal(iPhase,iSequence);
         timer.set("SquareLeftEntered",TimerCyclePeriod);
+        /*if(DoTest) {
+            ZvirataSchovej(0);   //2022-11-25 v testu jsou vsecha zvirata skryta
+            debug.log('Test: All animals are hidden');
+        }*/
 	}
 	/*
   if (key.pressed("g")){
@@ -302,7 +307,7 @@ function run() {
           text.modify(TXT_CHYBA,"CHYBA !");
           //var AimNo = AnimalSequence[iPhase][iSequence];   // cislo cile
           preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
-          if (DoTest || AimEntrances[AimNo14()] > 0 || CasZkoumej > 0){  // pokud test, nebo uz vstoupil do cile, nebo prozkoumava dvojici ctvercu 
+          if (!DoTest && (AimEntrances[AimNo14()] > 0 || CasZkoumej > 0)){  // pokud test, nebo uz vstoupil do cile, nebo prozkoumava dvojici ctvercu 
             // pokud je cas na zkoumani, pocitam chyby od zacatku
             ZapocitejChybu();
           }
@@ -374,7 +379,7 @@ function timerTask(name) {
               s_left = SquareLeft(XX,YY);   // vraci udaj, kterym smerem odesel ze ctverce Z|V|S|J
               if(s_left !=false){
                  debug.log('odesel ze ctverce '+IsInSquare+ ' na '+s_left);
-                 experiment.logToTrackLog("Square left: "+se);
+                 experiment.logToTrackLog("Square left: "+s_left);
                  ActivateAvoidace(false);  // deaktivuje vsechny stany ve ctverci, ze ktereho jsem odesel - trening i test
                  if(!DoTest && CasZkoumejZbyva <= 0 && IsPauza == false) { // TRENING a neni prozkoumavani na zacatku
                     if(SquarePairs[iPhase][0]==IsInSquare) {  // zajima me smer z jakeho do jakeho ctverce ve dvojici jde jde
@@ -472,6 +477,7 @@ function ActivateAnimal(iPhase,iSequence){
      if(DoTest) { // v testu ma nejdriv ukazat na cil
         PresunHrace(iPhase);        
         OrientationMarksHide(iPhase); // zobraz skryj orientacni znacky / kompasy podle TestSequence[4-5]
+        ZvirataSchovej(2); //2022-11-25 v testu jsou vsecha zvirata skryta, krome toho kde stojim, pokud nejsou videt orientacni znacky (tj je viden jen kompas) 
         TXT_UKOL_Last = "Ukaz na "+AnimalNames[ActiveN.ActiveTeepee];
         Ukazal = false;
         experiment.enablePlayerMovement(false); // zakazu chuzi
@@ -725,19 +731,43 @@ function PlotyZmiz(skryj){
 }
 function ZvirataSchovej(ukaz){
   // schova vsechna zvirata, nebo ukaze jen to aktivni pokud ukaz = 1
+   debug.log("ZvirataSchovej: "+ ukaz);
     if(ukaz==0){
       // skryju vsechna zvirata
+      for(j=0; j<AllSquares.length;j++){                       
+        for (m = 1; m<=4;m++){
+          // cyklus pres 4  zvirata ve ctverci
+          AnimalJmeno = AnimalName + AllSquares[j] +m; // napriklad AnimalA1
+          mark.get(AnimalJmeno).setVisible(0); // zobrazim / skryju kompas
+        }    
+      } 
+      /* stara metoda, kdy se zvirata posouvaly dolu pro schovani
       for(var key in AnimalXYPositions){
           var ZvireZmiz = AnimalName + key; // cele jmeno zvirete napr AnimalA2
           var Pozice = AnimalXYPositions[key];
           mark.get(ZvireZmiz).setLocation([Pozice.x,Pozice.y, AnimalHiddenZ]); // -400 bude pod podlahou, normalni je z
           //debug.log("schovano: "+ZvireZmiz + " na pozici "+[Pozice.x,Pozice.y,Pozice.z]) ;
       }
+      */
     } else if(ukaz==1) {
         // ukazu aktivni zvire
         var Pozice = AnimalXYPositions[ActiveTeepee]; //ActiveTeepee se nastavuje v GetActiveNames, napr E4
         var ZvireZmiz = AnimalName + ActiveTeepee; // cele jmeno zvirete napr AnimalA2
         mark.get(ZvireZmiz).setLocation([Pozice.x,Pozice.y, Pozice.z]); // -400 bude pod podlahou, normalni je z
+    } else if(ukaz==2) { // 2022-11-25
+      // ukazu zvire, u ktereho prave clovek stoji, pokud je v testu a jsou skryte orientacni znacky; ostatni zvirata skryju
+      for(j=0; j<AllSquares.length;j++){ 
+        if(DoTest && AllSquares[j] == IsInSquare && TestSequence[iPhase][5]==0) {
+          visible = 1; // ukazat zvire, kde clovek je
+        } else { 
+          visible = 0;
+        }                   
+        for (m = 1; m<=4;m++){
+          // cyklus pres 4  zvirata ve ctverci
+          AnimalJmeno = AnimalName + AllSquares[j] +m; // napriklad AnimalA1
+          mark.get(AnimalJmeno).setVisible(visible); // zobrazim / skryju kompas
+        }    
+      } 
     } else {
        // ukazu vsechna zvirata, ktera se maji pouzivat a skryju ty ktere nepouzivat
        for(var Ctverec in AnimalPositions){ // ap je jmeno ctverce
@@ -882,7 +912,7 @@ function NextInSequence(){  // posune AnimalSequence (tj cislo zvirete v ramci f
 }
 function Zamerovac(){
   // zamerovaci kruh - 21.4.2017
-   var ScreenX = experiment.getScreenX(); // 1680;//
+   var ScreenX = experiment.getScreenX(); // 1680;//   
    var ShapeSize = new Array;
     ShapeSize[640]=76;
     ShapeSize[800]=95;
@@ -901,9 +931,11 @@ function Zamerovac(){
     TXT_Krizek[1600]=[800,570]; //
     TXT_Krizek[1680]=[800,525]; // 1680 x 1050
    if(ShapeSize[ScreenX]== undefined || TXT_Krizek[ScreenX]==undefined){
-        text.modify(TXT_INSTRUKCE,"NEZNAMY ROZMER OBRAZOVKY");
-        debug.log('NEZNAMY ROZMER OBRAZOVKY ' + ScreenX);
-        experiment.setStop();
+     text.modify(TXT_INSTRUKCE,"NEZNAMY ROZMER OBRAZOVKY");
+     debug.log('NEZNAMY ROZMER OBRAZOVKY ' + ScreenX);
+     experiment.setStop();
+   } else {
+     debug.log("ScreenX known : " + ScreenX);
    }
    size = ShapeSize[ScreenX]*4;
    x = Math.floor(TXT_Krizek[ScreenX][0]); //-size/2.1
@@ -915,6 +947,7 @@ function Zamerovac(){
    debug.log("zamerovaci kruh: ["+x+";"+y+"],"+size);
    */
    text.create(SHAPE_ZAMER, x, y, 0, 0, 255, 10, ""); // ukazovaci krizek - modra
+      
    debug.log("zamerovaci krizek: ["+x+";"+y+"]"); // protoze kruh se v prubehu testu prestane vykreslovat, nevim vubec proc
 }
 

@@ -1,12 +1,13 @@
 // TRENING - nastaveni sekvence dvoji ctvercu
 var SquarePairs=Array();
 // poradi dvojic ctvercu podle fazi treningu - tohle pole urcuje delku treningu
-SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['I','H'], ['D','G'], ['B','C'], ['H','G'], ['E','F'],
-              ['C','B'], ['D','E'], ['B','A'], ['G','H'], ['F','E'], ['H','I'], ['G','D'], ['C','F'], 
-              ['I','H'], ['B','C'], ['E','D'], ['H','G'], ['F','C'], ['A','B'], ['D','G'], ['E','F'],
-              ['C','B'], ['G','H'], ['F','E'], ['G','D'], ['H','I'], ['C','F'], ['D','E'], ['B','A']];// 32 dvojic, kazda dvojice 2x(dopredu + dozadu)
+SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['I','H'], ['D','G'], ['B','C'], ['H','G'], ['I','F'],
+              ['C','B'], ['D','E'], ['B','A'], ['G','H'], ['F','I'], ['H','I'], ['G','D'], ['C','F'], 
+              ['I','H'], ['B','C'], ['E','D'], ['H','G'], ['F','C'], ['A','B'], ['D','G'], ['I','F'],
+              ['C','B'], ['G','H'], ['F','I'], ['G','D'], ['H','I'], ['C','F'], ['D','E'], ['B','A']];// 32 dvojic, kazda dvojice 2x(dopredu + dozadu)
 // nova sekvence 29.8.2017 -Alena - ctverce v ruznem poradi (AB i BA), neopakuji se za sebou, kratky pocet ukolu
-
+// 2022-11-25 -sekvence zmena z S na spiralu. EF->IF
+  
 // jednoducha sekvence na projiti vsech ctvercu             
 //SquarePairs=[['A','B'],['B','C'],['C','F'],['F','E'],['E','D'],['D','G'],['G','H'],['H','I']];                
   
