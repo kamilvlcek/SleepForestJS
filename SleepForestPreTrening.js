@@ -1,12 +1,13 @@
 function init() {	
-	experiment.setMap("TEST-SleepForest-pretraining2-Alena");
+	experiment.setMap("TEST-SleepForest-pretraining");
 }
-var Hvezdy = ['AimAreaA','AimAreaB','AimAreaC','AimAreaA'];  // jmena cilovych oblasti
-var Cile = ['A','B','C','A'];     // pojmenovani cilu 
+var Hvezdy = ['AimAreaA','AimAreaB','AimAreaC'];  // jmena cilovych oblasti
+var Cile = ['A','B','C'];     // pojmenovani cilu      - jine nez oblasti, ale to je jedno
 var cislo = 0;    // cislo hvezdy, do ktere jdu
 var zpatky = 0;
 var castam = 0;
 var caszpet = 0;
+// 16.12.2022 - zadne ploty neschovavam, nektere jsme vymazali a zbyle jsou fixne
 var Ploty = [['Plot1'],['Plot2'],['Plot1','Plot2','Plot3','Plot4','Plot5'] ]; // ktere ploty se ma ji v ktere fazi schovavat
 var PlotyPozice = {    // pozice plotu zvedaneho pri pruchodu mezi ctverci
     Plot1:{x:4601,y:-410}, Plot2:{x:1823,y:-2876}, 
@@ -43,33 +44,33 @@ function run() {
 	}
 	
 	if(cislo >= 0 &&  preference.get(Hvezdy[cislo]).entered()){
-			cas = parseFloat(preference.get(Hvezdy[cislo]).getPrevEnterTimeDiff());   // bude to tady fungovat?
-			debug.log(Hvezdy[cislo]+": "+cas+" s");  // zapis do logu
-      debug.log('vstup do ' + (Hvezdy[cislo]));
-			if(zpatky) caszpet += cas; else castam += cas;  // dalsi trial
-			
-			//debug.log("vzdálenost: " + preference.get(Hvezdy[cislo]).getPrevEnterDistDiff());
-			//debug.log("minimální vzdálenost: " + preference.get(Hvezdy[cislo]).getMinDist());
-	
-    	preference.get(Hvezdy[cislo]).setVisible(false);
-    	preference.get(Hvezdy[cislo]).setActive(false);      
-    	preference.get(Hvezdy[cislo]).beep(2); 
-      if(cislo>0 && cislo<Ploty.length) {
-        PlotyPosun(cislo-1,1); // ukaze ploty
-      }
+		cas = parseFloat(preference.get(Hvezdy[cislo]).getPrevEnterTimeDiff());   // bude to tady fungovat?
+		debug.log(Hvezdy[cislo]+": "+cas+" s");  // zapis do logu
+          debug.log('vstup do ' + (Hvezdy[cislo]));
+		if(zpatky) caszpet += cas; else castam += cas;  // dalsi trial
+		
+  		//debug.log("vzdálenost: " + preference.get(Hvezdy[cislo]).getPrevEnterDistDiff());
+  		//debug.log("minimální vzdálenost: " + preference.get(Hvezdy[cislo]).getMinDist());
+  	
+      	preference.get(Hvezdy[cislo]).setVisible(false);
+      	preference.get(Hvezdy[cislo]).setActive(false);      
+      	preference.get(Hvezdy[cislo]).beep(2); 
+        /*if(cislo>0 && cislo<Ploty.length) {
+          PlotyPosun(cislo-1,1); // ukaze ploty
+        } */
     	if(zpatky) cislo--; else cislo++;
     	
     	if(cislo>=Hvezdy.length){
     	  debug.log("cas tam: "+castam+" s\n");
-        text.modify(1,"KONEC");
-        experiment.setStop();						 
-			} else {
-				text.modify(1,"CIL "+Cile[cislo]);
-				aktivni = Hvezdy[cislo];
-			}
-			preference.get(aktivni).setVisible(false);
+            text.modify(1,"KONEC");
+            experiment.setStop();						 
+		} else {
+			text.modify(1,"CIL "+Cile[cislo]);
+			aktivni = Hvezdy[cislo];
+		}
+		preference.get(aktivni).setVisible(false);
     	preference.get(aktivni).setActive(true);
-      PlotyPosun(cislo-1,0);   // skryje ploty - jsou cislovane jinak, protoze pri hledani prvniho cile se neskryva zadny
+        //PlotyPosun(cislo-1,0);   // skryje ploty - jsou cislovane jinak, protoze pri hledani prvniho cile se neskryva zadny
   } 
 }
 function PlotyPosun(cisloplotu,ukaz){
