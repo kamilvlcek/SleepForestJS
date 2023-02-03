@@ -392,9 +392,9 @@ function timerTask(name) {
           if(PlayerMoved==0){
             SquareName = CtverecJmeno(0);   // startovni ctverec v teto fazi, predpokladam, ze cloveka presouvam vzdy je na start
             SubjektPozice = StartSubjectPositions[SquareName]; // [startovni pozice v aktualnim ctverci]
-            if (XX==SubjektPozice.x && YY == SubjektPozice.y) {
+            if (Math.abs(XX-SubjektPozice.x)<50 && Math.abs(YY- SubjektPozice.y)<50) {   // 3.2.2023 - staci byt 20ut daleko od cilove pozice, nekdy to nevychazi presne
                 PlayerMoved = 1;
-                debug.log('Player move finished to ' + [XX,YY]);
+                debug.log('Player move finished to ' + [XX,YY] + '==' + [SubjektPozice.x,SubjektPozice.y]);
             } else {
                 debug.log('Player is on '+ [XX,YY]+', NOT YET moved to ' + [SubjektPozice.x,SubjektPozice.y]);
             }    
@@ -589,7 +589,7 @@ function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
        if(Debug)  text.modify(TXT_DEBUG, IsInSquare +"/" + IsInAim + "-" + ActiveAimName.substring(3,5));
 
        // AVOIDANCE MISTA
-       ActivateAvoidace(true);
+       ActivateAvoidace(false); // 3.2.2023 - tohle tu uz vadi, avoidance chci aktivovat, az kdyz vyjdu z aktivniho ctverce
 
        // PLOTY
        if(CasZkoumej > 0 || iPhase>=RuznychDvojicCtvercu){  // po osmi dvojicich ctvercu ploty zmizi - neho hned, pokud je na zacatku prohledavani
@@ -650,7 +650,8 @@ function ActivateAvoidace(aktivuj){
            // zase je deaktivuju po vstupu do cile nebo po uplynuti casu
          }
        } else { // deaktivuju vsechna mista, volne prohledavani stanu
-          var Ctverce = [IsInSquare]; // DoTest ? [IsInSquare] :  SquarePairs[iPhase];  // v testu pri odchodu z ctverce, v treningu pri volnem prohledavani
+          var Ctverce = AllSquares; //3.2.2023  
+          // var Ctverce = [IsInSquare]; // DoTest ? [IsInSquare] :  SquarePairs[iPhase];  // v testu pri odchodu z ctverce, v treningu pri volnem prohledavani
           for (isquare = 0; isquare < Ctverce.length; isquare++){ // pro vsechny ted aktivni ctverce
             //for (ianimal = 1; ianimal <= 6; ianimal++){    // pro vsech sest typi=stanu v tomto ctverci
             //2019-04-12 - v kazdem ctverci je jen jedno zvire a jeden Aim
@@ -841,7 +842,9 @@ function PresunHrace(iiPhase){
      SubjektPozice =  StartSubjectPositions[SquareName];
      experiment.setPlayerLocation([SubjektPozice.x,SubjektPozice.y]); // pozor, to presunuti chvili trva, neni to hned, az pristi RunCycle nejdriv.
      PlayerMoved = 0 
-     logtext =  "Player moved to: "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y];
+     XX = Math.round(experiment.getPlayerLocationX());
+     YY = Math.round(experiment.getPlayerLocationY());
+     logtext =  "Player moved from "+ [XX,YY]+ " to: "+SquareName + ", xy=" + [SubjektPozice.x,SubjektPozice.y];
      debug.log(logtext);
      experiment.logToTrackLog(logtext);
      IsInSquare = SquareName;   // v jakem je aktualne ctverci
