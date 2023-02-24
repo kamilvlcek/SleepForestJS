@@ -2,8 +2,8 @@
 var SquarePairs=Array();
 // poradi dvojic ctvercu podle fazi treningu - tohle pole urcuje delku treningu
 // 31.1.2023 
-SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['H','G'], 
-             ['D','E'], ['B','A'], ['G','H'], ['C','F'], 
+SquarePairs=[['A','B'], ['F','C'], ['E','D'], ['G','H'], 
+             ['D','E'], ['B','A'], ['H','G'], ['C','F'], 
              ['E','D'], ['H','G'], ['F','C'], ['A','B'],  
              ['G','H'], ['C','F'], ['D','E'], ['B','A'] ];// 16 neprekryvajicich se dvojic, kazda dvojice 2x (dopredu + dozadu)
 /*SquarePairs=[ ['I','H'], ['D','G'], ['B','C'], ['E','F'],
