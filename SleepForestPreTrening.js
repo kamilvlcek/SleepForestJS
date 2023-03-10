@@ -2,7 +2,7 @@ function init() {
 	experiment.setMap("TEST-SleepForest-pretraining");
 }
 var Hvezdy = ['AimAreaA','AimAreaB','AimAreaC'];  // jmena cilovych oblasti
-var Cile = ['A','B','C'];     // pojmenovani cilu      - jine nez oblasti, ale to je jedno
+var Cile = ['k vetrnemu mlynu','ke kamennemu chramu','k sose indiana'];     // pojmenovani cilu      - jine nez oblasti, ale to je jedno
 var cislo = 0;    // cislo hvezdy, do ktere jdu
 var zpatky = 0;
 var castam = 0;
@@ -65,7 +65,7 @@ function run() {
             text.modify(1,"KONEC");
             experiment.setStop();						 
 		} else {
-			text.modify(1,"CIL "+Cile[cislo]);
+			text.modify(1,TextUkol());
 			aktivni = Hvezdy[cislo];
 		}
 		preference.get(aktivni).setVisible(false);
@@ -81,6 +81,8 @@ function PlotyPosun(cisloplotu,ukaz){
          mark.get(PlotZmiz).setLocation([PlotPozice.x,PlotPozice.y, (ukaz?PlotShownZ:PlotHiddenZ) ]);
          debug.log( (ukaz?"ukaz: ":"skryj: ") + PlotZmiz );
    }
-   
-
+}
+function TextUkol(){
+	// funkce vrati text aktualniho ukolu - Dojdi k ...
+	return "Dojdete "+Cile[cislo];
 }
