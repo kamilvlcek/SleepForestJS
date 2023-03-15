@@ -27,6 +27,8 @@ var AnimalSequence=Array();   // poradi zvirat podle fazi treningu
 // porad jedna sekvence
 AnimalSequence=[[0,10]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi 
 // 2017-10-12 - jen jedno zvire v kazdem ctverci  ,1,11
+var AnimalSequenceBackup = AnimalSequence; // zaloha puvodniho AnimalSequence, protoze to se meni v NextInSequence, ale nefunguje, nejak se zahadne samo meni
+// pokud se zmeni AnimalSequence, je tedy treba opravit hodnotu i v NextInSequence()
 
 // kratka sekvence na testovani skriptu
 //AnimalSequence=[/*debug*/[0,1,0,1,10,11,10,11]]; // n<10 - prvni ctverec v poradi, n>10 druhy ctverec v poradi

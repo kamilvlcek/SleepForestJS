@@ -223,10 +223,8 @@ function run() {
 	if (key.pressed('o')){
 	    if (AnimalPictureShown){
             ShowAnimalPicture(ActiveTeepee, false); // skryje obrazek ciloveho zvirete
-            AnimalPictureShown = 0;
 	    } else {
             ShowAnimalPicture(ActiveTeepee, true); // skryje obrazek ciloveho zvirete
-            AnimalPictureShown = 1;
         }
         debug.log('AnimalPictureShown: '+AnimalPictureShown);
     }
@@ -572,10 +570,10 @@ function GetActiveNames(checksquare) {
     // nastavuje globalni promennou ActiveAimNameText
     var SquareName = CtverecJmeno(1);  //  jmeno aktualniho ctverce ABC DEF GH nebo I
     if(checksquare && !DoTest && SquareName == IsInSquare){ // v treningu nechci aby novy aktivni cil byl ve stejne ctverci, kde clovek stoji
-        NextInSequence();  // dalsi zvire v sekvenci pro tuto fazi - zmeni AnimalSequence pro aktivni fazi, takze funguje i v pro dalsi cile v teto fazi 
+        NextInSequence(0);  // dalsi zvire v sekvenci pro tuto fazi - zmeni AnimalSequence pro aktivni fazi, takze funguje i v pro dalsi cile v teto fazi
         SquareName = CtverecJmeno(1);
     }
-    var AimNo16 = AnimalPositions[SquareName]; // 2019-04-12 - v kazdem ctverci jen jedno zvire
+    var AimNo16 = AnimalPositions[SquareName]; // 2019-04-12 - v kazdem ctverci jen jedno zvire.  2023 - AimNo16 je praznde, protoze AnimalPositions jsou prazdna
     // cislo cile v ramci ctverce odpovidajici cislu stanu 1-6, 2019-04 vzdy jen jedno cislo
 
      // tyhle jmena bych potreboval ziskat v nejake funkci, abych ji mohl volat i po uplynuti casovace CasZkoumej
@@ -598,14 +596,15 @@ function ShowAnimalPicture(ActiveTeepee, ukaz){
            experiment.addScreenShape(AnimalHandleLast, 10, 80, 255, 255, 255, 256, 256, 0, false, AnimalPictures[ActiveTeepee]);
            AnimalPicturesHandles[ActiveTeepee] =   AnimalHandleLast;  // dynamicky postupne prirazuju obrazku handle
        }
-       debug.log('ShowAnimalPicture: shown '+ AnimalPictures[ActiveTeepee]);
+       debug.log('ShowAnimalPicture: shown '+ AnimalPicturesHandles[ActiveTeepee] + ":" + AnimalPictures[ActiveTeepee]);
        AnimalPictureShown = 1;
      } else {
         // schova obrazek zvirete
         if(AnimalPicturesHandles[ActiveTeepee]){ // pokud handle neexistuje, tak jsem ho jeste nevytvoril a nemam tedy co schovavat
             experiment.modifyScreenShape(AnimalPicturesHandles[ActiveTeepee], false);
+            debug.log('ShowAnimalPicture: hidden '+ AnimalPicturesHandles[ActiveTeepee] + ":" + AnimalPictures[ActiveTeepee]);
+            AnimalPictureShown=0;
         }
-        AnimalPictureShown=0;
      }
 }
 function ActivateGoal(ActiveAimName,ActiveTeepee,iPhase,aktivuj){
@@ -742,6 +741,9 @@ function CtverecJmeno(cilovy){
             var SquareName = TestSequence[iPhase][ 1-TestSequence[iPhase][3] ];
         }
      } else {     // TRENING
+        debug.log("CtverecJmeno " + cilovy + ":AnimalSequence: " + AnimalSequence[0]);
+        debug.log("CtverecJmeno:iSequence: " + iSequence);
+        debug.log("CtverecJmeno:SquarePairs[" + iPhase + "]:" + SquarePairs[iPhase]);
         var AimNo = AnimalSequence[AnimalSequenceIndex(iPhase)][iSequence];   // cislo cile v ramci ctverce - 28.7.2022 - jen dve moznosti 0 nebo 10
         if (cilovy) {   // cilovy ctverec
             var SquareName = SquarePairs[iPhase][toInt(AimNo/10)];  // SquarePairs se sekvence dvojic ctvercu
@@ -975,9 +977,11 @@ function NextTrial(nextPhase){
       // pokud jsem prosel vsechna zvirata mezi ctverci, jdu na dalsi fazi
       // v testu jdu vzdy na dalsi fazi
       iPhase += 1;
+      NextInSequence(1); // 15.3.2023 - resetuju AnimalSequence
+      iSequence = 0; // 15.3.2023 - jinak je  iSequence 2 (tj vetsi nez AnimalSequence.length a pouziva se v CtverecJmeno
       ActivateSquares(iPhase); // i presune hrace na novy start, KONEC pokud uz nejsou trialy
-      //iSequence je zatim porad 1, proto se presuna na druhy ctverec v sekvenci
-      iSequence = 0;  // az po presunu hrace
+      //15.3.2023 - blbost: iSequence je zatim porad 1, proto se presuna na druhy ctverec v sekvenci
+      //iSequence = 0;  // az po presunu hrace
       ErrorsNumber = 0; // vymazu pocet chyb
       text.modify(TXT_CHYBPOCET,""); // smazu vypis chyb, nez clovek zase nejakou udela
       debug.log("NextTrial: Phase: "+iPhase);
@@ -989,21 +993,29 @@ function NextTrial(nextPhase){
     text.modify(TXT_SEKVENCE,"NALEZENO:" + Nalezenych);
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );
 }
-function NextInSequence(){  // posune AnimalSequence (tj cislo zvirete v ramci faze) dopredu, takze prvni da nakonec a kazdy dalsi o pozici dopredu
+function NextInSequence(reset){  // posune AnimalSequence (tj cislo zvirete v ramci faze) dopredu, takze prvni da nakonec a kazdy dalsi o pozici dopredu
   // chci aby aktualni zvire bylo to nasledujic v sekvenci.
   // nemuzu posunout iSequence, protoze tim by se mi driv ukoncila faze
-    iAS = AnimalSequenceIndex(iPhase);
-    for(j = 0; j < AnimalSequence[iAS].length; j++){
-      if(j == 0) {
-        AnimalSequence0 = AnimalSequence[iAS][0]; //prvni si ulozim docasne
-      } else {
-        AnimalSequence[iAS][j-1]=AnimalSequence[iAS][j]; // ostatni presunu o jednu dopredu
-      }
+    var AnimalSequence0; // nova explicitni deklarace
+    if (reset) {
+        if (AnimalSequenceBackup.length > 0) { // if the AnimalSequenceBackup was set
+            //AnimalSequence = AnimalSequenceBackup; // 15.3.2023 - tohle z nejakeho duvodu nefunguje, vubec nechapu. AnimalSequenceBackup je zmenene taky, nezustava to [0,10];
+            AnimalSequence=[[0,10]];
+            debug.log('AnimalSequence reset to ' + AnimalSequence + " NOT using AnimalSequenceBackup: " + AnimalSequenceBackup);
+        }
+    } else {
+        iAS = AnimalSequenceIndex(iPhase);
+        for (j = 0; j < AnimalSequence[iAS].length; j++) {
+            if (j == 0) {
+                AnimalSequence0 = AnimalSequence[iAS][0]; //prvni si ulozim docasne
+            } else {
+                AnimalSequence[iAS][j - 1] = AnimalSequence[iAS][j]; // ostatni presunu o jednu dopredu
+            }
+        }
+        // nakonec to prvni presunu nakonec
+        AnimalSequence[iAS][j - 1] = AnimalSequence0;   // j je ted uz rovno delce AnimalSequence[iAS].length
+        debug.log('AnimalSequence changed to ' + AnimalSequence);
     }
-    // nakonec to prvni presunu nakonec
-    AnimalSequence[iAS][j-1] =  AnimalSequence0;   // j je ted uz rovno delce AnimalSequence[iAS].length
-
-    debug.log('AnimalSequence changed to '+AnimalSequence);
     /*
     iSequence += 1;
     var delkasekvence = DoTest?  1 : AnimalSequence[AnimalSequenceIndex(iPhase)].length;
@@ -1118,7 +1130,7 @@ function EnteredAimReport(aimfound){
     if (aimfound) {
       TXT_UKOL_Last = "VYBORNE !";
       text.modify(TXT_UKOL,TXT_UKOL_Last);
-      preference.get("AimSound"+CtverecJmeno()).beep(1.0);  // zahraju pozitivni zvuk
+      preference.get("AimSound"+CtverecJmeno(0)).beep(1.0);  // zahraju pozitivni zvuk
       ShowAnimalPicture(ActiveTeepee, false); // schova obrazek zvirete
     } else {  // vyprsel cas / pocet pokusu pro nalezeni cile
       TXT_UKOL_Last = "NEPOVEDLO SE VAM NAJIT CIL";
@@ -1146,7 +1158,7 @@ function EnteredAvoidReport(){
     // 2. vystupy pro hrace = CHYBA
     // presunuto 16.12.2022 z  VSTUP DO CHYBNEHO CILE, kvuli  MarkAimSpace
     text.modify(TXT_CHYBA,"CHYBA !");
-    preference.get("AvoidSound"+CtverecJmeno()).beep(1.0);  // zahraju vystrazny zvuk
+    preference.get("AvoidSound"+CtverecJmeno(0)).beep(1.0);  // zahraju vystrazny zvuk
     if (DoTest || (AimEntrances[AimNo14()] > 0 || CasZkoumejZbyva > 0)){  // pokud test, nebo uz vstoupil do cile, nebo prozkoumava dvojici ctvercu
       // pokud je cas na zkoumani, pocitam chyby od zacatku
       ZapocitejChybu();   // zvysi ErrorsNumber a loguje chybu
