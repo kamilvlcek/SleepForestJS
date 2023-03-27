@@ -151,7 +151,8 @@ var SquarePairsErrorsLimit2 = 4; // po kolika opakovanych dvojich ctvercu jeste 
 var SquarePairsToAdd = 4; // kole dvojic se ma na konci jeste pridat, pokud prekrocen limit na SquarePairsErrorsLimit2
 var SquarePairsAdded = 0; // kolik uz bylo pridano dvojic ctvercu na konci treningu
 var IsPauza = false; // jestli jej prave ted pauza  - mezi dvojicemi ctvercu v treningu nebo po uplynuti limitu pro nalezeni cile v testu
-var Ukazal = true; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
+var Ukazal = false; // stavova promenna ukazani na cil v testu. V okamziku kdy je false, subjekt se nehybe z mista a musi ukazat
+var OznacilCil = false; // jestli oznacil spravny cil mezernikem v testu
 var PlayerMoved = 1; // stavy po presunu hrace: 0 jeste nepresunut, 1 = presunut
 var RuznychDvojicCtvercu = 4; // kolik je ruznych dvojic - pouziva se na skryti plotu a pocatecni exploraci
 var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma jen prochazet, bez ukolu
@@ -192,25 +193,27 @@ function run() {
             ZvirataSchovej(0);   //2022-11-25 v testu jsou vsecha zvirata skryta
             debug.log('Test: All animals are hidden');
         }*/
+        experiment.logToTrackLog("Script version: 2023-03-24"); // aby jsme poznali z vysledku, jaka to je verze skriptu
+        debug.log("Script version: 2023-03-24");
 	}
 	if(typeof ActiveAimName === 'undefined' || typeof ActiveAimName === 'null'){ // nekdy se to ze zahadneho duvodu stane
         GetActiveNames(false); // tady vysledek nepotrebuju, chci jen nastavit  ActiveAimName
     }
-	if (key.pressed("g") && Debug){
+	if (key.pressed("g") && Debug){ // ukaz cilove misto - goal
 	   preference.get(ActiveAimName).setVisible(true);
        for(iaim = 0; iaim < InactiveNames.length; iaim++){
          Aim = InactiveNames[iaim];
          if( (pref = PrefAim(Aim,'ActivateAvoidace true'))!=false){ // nekdy se to nezdari ? 2017-10-17
-          pref.setVisible(true);     // zobrazim misto
+          pref.setVisible(true);     // zobrazim ostatni cilove misto
          }
        }
 	}
-	if (key.pressed("h") && Debug){
+	if (key.pressed("h") && Debug){ // skryj cilove misto
 		preference.get(ActiveAimName).setVisible(false);
         for(iaim = 0; iaim < InactiveNames.length; iaim++){
          Aim = InactiveNames[iaim];
          if( (pref = PrefAim(Aim,'ActivateAvoidace true'))!=false){ // nekdy se to nezdari ? 2017-10-17
-          pref.setVisible(false);     // skryju misto
+          pref.setVisible(false);     // skryju ostatni cilovemisto
          }
        }
 	}
@@ -220,7 +223,7 @@ function run() {
         InactiveEntered = '';
         if(Debug)  text.modify(TXT_DEBUG,  IsInSquare +"/" + IsInAim + "-" + ActiveAimName.substring(3,5));
     }
-	if (key.pressed('o')){
+	if (key.pressed('o')){ // skryju / zobrazim obrazek ciloveho zvirete
 	    if (AnimalPictureShown){
             ShowAnimalPicture(ActiveTeepee, false); // skryje obrazek ciloveho zvirete
 	    } else {
@@ -242,6 +245,9 @@ function run() {
       YY = Math.round(experiment.getPlayerLocationY());
       debug.log('PlayerLocation XY: '+[XX,YY]);
 	}
+    if (key.pressed("y") && Debug){    // natocim hrace na sever
+        experiment.setPlayerRotation(0,90); // [double Pitch, double Yaw] - natocim hrace na sever,
+    }
 
 	if (IsPauza && key.pressed("space")){
     // konec pauzy zmacknutim mezerniku
@@ -279,7 +285,7 @@ function run() {
       IsPauza = false;
 	}
   if (DoTest && !IsPauza && key.pressed("space")){   // ukazovani smerem na cil v testu + oznacovani cile pokud  MarkAimSpace
-    if(MarkAimSpace) debug.log('IsInStartSquare ' + IsInStartSquare);
+    if(MarkAimSpace) debug.log('space pressed: IsInStartSquare ' + IsInStartSquare);
     if (!Ukazal) {  // ukazani na cil na zacatku testoveho trialu
         Ukazal = true;
         experiment.enablePlayerMovement(true); // povolim zase chuzi
@@ -299,6 +305,7 @@ function run() {
        if (IsInAim == ActiveAimName){ // nebo ActiveSquareName
           // pokud je ve spravnem cili
           // - hlaska + zvuk + deaktivace cilu (splneno)
+          OznacilCil = true; // oznacil spravne cil v testu mezernikem
           EnteredAimReport(true);
        } else {
          // je ve spatnem cili
@@ -326,14 +333,16 @@ function run() {
 	if (IsInAim==ActiveAimName && preference.get(ActiveAimName).left() && CasZkoumejZbyva <= 0){ //CasZkoumejZbyva je v testu vzdy 0
       // odejiti z ciloveho mista
       // 1. logy a nastaveni IsInAim
-      debug.log("left Aim: "+ActiveAimName);
-      experiment.logToTrackLog("Aim left:"+ActiveAimName);
+      debug.log("Active Aim left : "+ActiveAimName);
+      experiment.logToTrackLog("Active Aim left:"+ActiveAimName);
       IsInAim = "";
       if(Debug)  text.modify(TXT_DEBUG,  IsInSquare +"/" + IsInAim + "-" + ActiveAimName.substring(3,5));
       //2. aktivace dalsiho trialu
-      Nalezenych++; // zvysim pocet nalezenych cilu
-      NextTrial(false);  // <- odejiti z ciloveho mista - vola i ActivateSquares
-      ActivateAnimal(iPhase,iSequence); // aktivujuju dalsi cilova mista a inactivegoals=chyby
+      if (!MarkAimSpace || !DoTest || OznacilCil)  {
+          Nalezenych++; // zvysim pocet nalezenych cilu
+          NextTrial(false);  // <- odejiti z ciloveho mista - vola i ActivateSquares
+          ActivateAnimal(iPhase,iSequence); // aktivujuju dalsi cilova mista a inactivegoals=chyby
+      }
 	}
    // VSTUP DO CHYBNEHO CILE
   for(iaim = 0; iaim < InactiveNames.length; iaim++){
@@ -365,6 +374,13 @@ function run() {
       text.modify(TXT_CHYBA,"");
       InactiveEntered = '';
   }
+  // VYSTUP Z JINEHO CILE, pri presunuti hrace se muze stat, ze je porad IsInAim podle stareho mista
+  if(IsInAim!=='' && preference.get(IsInAim).left()   ){
+      debug.log("Other Aim left: "+IsInAim);
+      experiment.logToTrackLog("Other Aim left:"+IsInAim);
+      IsInAim = "";
+      if(Debug)  text.modify(TXT_DEBUG,  IsInSquare +"/" + IsInAim + "-" + ActiveAimName.substring(3,5));
+  }
 
   RunCycle = RunCycle + 1;   // testuju, jak se spousti tenhle cyklus RUN
   debug.log("RunCycle "+RunCycle);
@@ -383,10 +399,12 @@ function timerTask(name) {
           text.modify(TXT_SEKUNDY,TestCasZbyva); // kolik casu zbyva
       } else {
           text.modify(TXT_SEKUNDY,"");
-          mark.get("Completed").beep(1.0);  // zahraju zvuk AAPP.Completed,
-          debug.log("Aim not found (time limit): " + ActiveAimName + ", iPhase: " + iPhase);
-          experiment.logToTrackLog("Aim not found (time limit):" + ActiveAimName + ", iPhase: " + iPhase);
-          EnteredAimReport(false);     // nepovedlo se najit cil v limitu
+          if (!OznacilCil) { // pokud vyprsel cas, ale clovek uz cil oznacil a porad stoji v cili, jeste z nej nevystoupil
+              mark.get("Completed").beep(1.0);  // zahraju zvuk AAPP.Completed,
+              debug.log("Aim not found (time limit): " + ActiveAimName + ", iPhase: " + iPhase);
+              experiment.logToTrackLog("Aim not found (time limit):" + ActiveAimName + ", iPhase: " + iPhase);
+              EnteredAimReport(false);     // nepovedlo se najit cil v limitu
+          }
       }
 
     } else if(name=='CasZkoumejZbyva'){    // casovac pouze na odpocitavani do konce, kazdou vterinu
@@ -419,7 +437,9 @@ function timerTask(name) {
             SubjektPozice = StartSubjectPositions[SquareName]; // [startovni pozice v aktualnim ctverci]
             if (Math.abs(XX-SubjektPozice.x)<50 && Math.abs(YY- SubjektPozice.y)<50) {   // 3.2.2023 - staci byt 20ut daleko od cilove pozice, nekdy to nevychazi presne
                 PlayerMoved = 1; // presun dokoncen
-                debug.log('Player move finished to ' + [XX,YY] + '==' + [SubjektPozice.x,SubjektPozice.y] + '('+SquareName+')' );
+                logtext = 'Player move finished to ' + [XX,YY] + '==' + [SubjektPozice.x,SubjektPozice.y] + '('+SquareName+')';
+                debug.log( logtext);
+                experiment.logToTrackLog(logtext); // zapis do .tr souboru
             } else {
                 debug.log('Player is on '+ [XX,YY]+', NOT YET moved to ' + [SubjektPozice.x,SubjektPozice.y] + '('+SquareName+')' );
             }
@@ -541,6 +561,7 @@ function ActivateAnimal(iPhase,iSequence){
         ZvirataSchovej(2); //2022-11-25 v testu jsou vsecha zvirata skryta, krome toho kde stojim, pokud nejsou videt orientacni znacky (tj je viden jen kompas) 
         TXT_UKOL_Last = "Ukaz na "+AnimalNames[ActiveN.ActiveTeepee];
         Ukazal = false;
+        OznacilCil = false;
         experiment.enablePlayerMovement(false); // zakazu chuzi
         //experiment.modifyScreenShape(SHAPE_ZAMER, true); // zobrazim zamerovaci kruh
         text.modify(SHAPE_ZAMER,"+");
@@ -998,7 +1019,7 @@ function NextInSequence(reset){  // posune AnimalSequence (tj cislo zvirete v ra
   // nemuzu posunout iSequence, protoze tim by se mi driv ukoncila faze
     var AnimalSequence0; // nova explicitni deklarace
     if (reset) {
-        if (AnimalSequenceBackup.length > 0) { // if the AnimalSequenceBackup was set
+        if (AnimalSequenceBackup !== undefined && AnimalSequenceBackup.length > 0) { // if the AnimalSequenceBackup was set
             //AnimalSequence = AnimalSequenceBackup; // 15.3.2023 - tohle z nejakeho duvodu nefunguje, vubec nechapu. AnimalSequenceBackup je zmenene taky, nezustava to [0,10];
             AnimalSequence=[[0,10]];
             debug.log('AnimalSequence reset to ' + AnimalSequence + " NOT using AnimalSequenceBackup: " + AnimalSequenceBackup);
@@ -1127,6 +1148,7 @@ function ZapocitejChybu(){
 function EnteredAimReport(aimfound){
     // 2. vystupy pro hrace = splneno
     // presunuto 16.12.2022 z  VSTUP A VYSTUP DO/Z AKTIVNIHO CILE, kvuli  MarkAimSpace
+    // spousti se 1) po vstup do mista v treningu nebo v testu pokud MarkAimSpace == 0 2) po stlaceni mezeniku pokud   MarkAimSpace == 1
     if (aimfound) {
       TXT_UKOL_Last = "VYBORNE !";
       text.modify(TXT_UKOL,TXT_UKOL_Last);

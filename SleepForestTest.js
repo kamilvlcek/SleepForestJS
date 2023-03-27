@@ -1,25 +1,25 @@
 // TEST - nastaveni sekvence ctverecku a zvirat v nich
 var TestSequence = [ 
 // sekvence ctvercu a cisel zvirat. Cisla zvirat (1. cislo) jsou indexy v AnimalPositions (0 nebo 1)
-// 2. cislo urcuje ze ktereho ctverce se startuje 0=prvni (v tomto radku D), 1=druhy (v tomto radku I)
+// 2. cislo urcuje ze ktereho ctverce se startuje 0=druhy (v prvnim radku A), 1=prvni (v tretim radku B)
 // 3.a 4. cislo urcuje co je videt 3. je kompas (sipka), 4. jsou 4 orientacni znacky (stromy aj).  
-['A','B',0,0,0,1], //1  
-['G','I',0,0,1,0], //2  
-['B','F',0,1,1,0], //3
-['C','E',0,1,0,1], //4
-['G','D',0,0,1,0], //5
-['D','F',0,1,0,1], //6
-['E','G',0,1,1,0], //7
+['A','B',0,0,0,1], //1  Najdi JELENA = A
+['G','I',0,0,1,0], //2  Najdi MOTYLA =G
+['B','F',0,1,1,0], //3  Najdi KROKODYLA
+['C','E',0,1,0,1], //4  Najdi KOCKU = E
+['G','D',0,0,1,0], //5  Najdi MOTYLA = G
+['D','F',0,1,0,1], //6  Najdi KROKODYLA = F
+['E','G',0,1,1,0], //7  Najdi MOTYLA = G
 ['G','I',0,1,0,1], //8
-['B','C',0,0,1,0], //9
+['B','C',0,0,1,0], //9  Najdi KOLIBRIKA C->B
 ['I','H',0,0,0,1], //10
 ['G','I',0,1,1,0], //11
 ['B','F',0,1,0,1], //12
 ['D','H',0,0,1,0], //13
 ['H','G',0,0,0,1], //14
-['A','C',0,1,1,0], //15
-['D','H',0,1,0,1], //16
-['D','F',0,0,1,0], //17
+['A','C',0,1,1,0], //15 Najdi ZEBRU A -> C
+['D','H',0,1,0,1], //16 Najdi KACHNU D -> H
+['D','F',0,0,1,0], //17 Najdi PRASE F-> D
 ['A','B',0,0,1,0], //18
 ['F','E',0,1,0,1], //19
 ['A','C',0,1,0,1], //20
@@ -68,5 +68,5 @@ var TestSequence = [
 ]; 
 */
 var DoTest = true;        // tohle rozhoduje, jestli se jedna o test nebo trening
-
+var AnimalSequenceBackup = []; // kvuli treningu, kde se pouziva, aby ani v testu nebyla nedefinovana
 experiment.includeScript(".//SleepForest.js");

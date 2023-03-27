@@ -24,7 +24,7 @@ function run() {
 		experiment.setTrackRate(0.05);
 		experiment.setPlayerSpeed(1500);
 		//platform.get("plosina").doRotateTime(10000,9,-1);
-    text.create(1, 250, 50, 255, 255,0, 3,"CIL A");
+    text.create(1, 250, 50, 255, 255,0, 3,TextUkol());
     //experiment.setPlayerRotation(0,33); // musim ho otocit vertikalne na nulu, protoze se bude pohybovat jen pomoci left right klaves
     preference.get(Hvezdy[cislo]).setVisible(false);
     preference.get(Hvezdy[cislo]).setActive(true);   // CIL A se aktivuje 
