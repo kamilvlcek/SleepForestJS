@@ -105,14 +105,14 @@ var StartSubjectPositions = {
 }
 
 var SquaresBoundaries = { // hranice ctvercu pro detekci vchazeni a vychazeni
-    X: {A:[-1574,-318],B:[414,1690],C:[2392,3668], // pojmenovani sloupcu ABC - musi byt v prvni radce
-        D:[-1574,-318],E:[414,1690],F:[2392,3668],
-        G:[-1574,-318],H:[414,1690],I:[2392,3668]
+    X: {A:[-1600,-310],B:[400,1690],C:[2392,3668], // pojmenovani sloupcu ABC - musi byt v prvni radce
+        D:[-1574,-318],E:[509,1790],F:[2392,3668],
+        G:[-1540,-230],H:[400,1690],I:[2430,3720]
         },
-    Y: {A:[-1630,-346],D:[416,1700],G:[2414,3668], // pojmenovani radku ADG  - musi byt v prvni radce
-        B:[-1630,-346],E:[416,1700],H:[2414,3668],
-        C:[-1630,-346],F:[416,1700],I:[2414,3668]
-        }
+    Y: {A:[-1630,-346],D:[416,1700],G:[2414,3720], // pojmenovani radku ADG  - musi byt v prvni radce
+        B:[-1600,-300],E:[360,1650],H:[2300,3600],
+        C:[-1620,-320],F:[390,1700],I:[2320,3630]
+        } // 29.3.2023 - oprava x i y, stavel jsem si ceduli sever na rohy vsech ctvercu, predtim jsem dal prepivot x0 y-100, aby sedela pozice jeji nohy
 }
 
 var AllSquares = ['A','B','C','D','E','F','G','H','I'];
@@ -193,8 +193,8 @@ function run() {
             ZvirataSchovej(0);   //2022-11-25 v testu jsou vsecha zvirata skryta
             debug.log('Test: All animals are hidden');
         }*/
-        experiment.logToTrackLog("Script version: 2023-03-24"); // aby jsme poznali z vysledku, jaka to je verze skriptu
-        debug.log("Script version: 2023-03-24");
+        experiment.logToTrackLog("Script version: 2023-03-29"); // aby jsme poznali z vysledku, jaka to je verze skriptu
+        debug.log("Script version: 2023-03-29");
 	}
 	if(typeof ActiveAimName === 'undefined' || typeof ActiveAimName === 'null'){ // nekdy se to ze zahadneho duvodu stane
         GetActiveNames(false); // tady vysledek nepotrebuju, chci jen nastavit  ActiveAimName
@@ -236,7 +236,7 @@ function run() {
         NextTrial(true);    // zvysim cislo faze
         ActivateAnimal(iPhase,iSequence);
     }
-    if (key.pressed('k') ){ // ukonceni prohledavani, kvuli usetreni casu
+    if (key.pressed('k') && CasZkoumejZbyva > 0){ // ukonceni prohledavani, kvuli usetreni casu. Jen pokud probiha prozkoumavani
         CasZkoumejStart.setSeconds(CasZkoumejStart.getSeconds() - CasZkoumej);  // posunu zacatek zkoumani v case dozadu  - timestamp je asi v ms
         debug.log('CasZkoumej finished manually');
     }
