@@ -1,7 +1,7 @@
 // 2019-05-03. Line 22: replaced 'MROZE' with 'KACHNU'. Line 27: replaced "Obrazky.walrus" with "Obrazky.duck". Line 78-84: updated AnimalXYPositions.
 //2019-07-30. LINE 33: PlotyPozice upraveno tak, ze jsou mezi kazdym ctvercem dva ploty. LINE 49: SquarePassage upraveno stejne tak. LINE 397: funkce ZvirataSchovej(0) vymenena za ZvirataSchovej(2)
 //2020-03-09: All usage of function "ZvirataSchovej" was commented out (except the definition)
-//2022-08-01: nova funkce OrientationMarksHide na schovani kompasu a/nebo orientacnich znacek pri testu
+//2022-08-01: nova funkce OrientationMarksShow na schovani kompasu a/nebo orientacnich znacek pri testu
 //2022-11-25 v testu jsou vsecha zvirata skryta    ZvirataSchovej (0)
 
 
@@ -94,7 +94,6 @@ var AnimalXYPositions = { // pozice zvirat abych je mohl skryvat - posouvat a za
 //var AnimalHiddenZ = -400; // vyska zvirete schovaneho - 0= nad stany, -400 = pod podlahou
 var PlotHiddenZ = -854;  // vyska plotu schovaneho // stare udaje 0= nad stany, -400 = pod podlahou -260 - da se prekrocit
 var PlotShownZ = -645;  // vyska plotu ukazaneho ;
-var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
 var Debug = 0; // pokud 1, zobrazuje se aktualni ctverec a pozice cile - pro ucely ladeni experimentu
 var MarkAimSpace = 1; // pokud 1 , oznacuje se v testu cil mezernikem. Nestaci do nej vejit 
 
@@ -122,7 +121,8 @@ var AnimalName = 'Animal'; // zacatek jmena kazdeho zvirete
 var CompasName = 'CeduleSever';  // Cedule ukazujici sever (alias Kompas)
 var MarkName = 'Mark'; //  4 objekty orientacnich znacek, MarkA1 až MarkA4, MarkB1 až MarkB4 atd
 
-var iPhase = 0;   // aktualni cislo faze (jedna dvojice ctvercu) , index v SquarePairs a TestSequence 
+var iPhase = 0;   // aktualni cislo faze (jedna dvojice ctvercu) , index v SquarePairs a TestSequence
+var iPhaseTrainingMax = 30; // maximalni cislo faze v treningu. Ukoncim test pred touto fazi i pokud se jeste nenaucil - 19.4.2023
 var iSequence = 0;  // aktualni cislo stanu/zvirete ve fazi
 var Nalezenych = 0;  // pocet nalezenych cilu, pokud v testu nenajde cil, nesedi to s iPhase ani iSekvence
 var ActiveAimName = ''; // jmeno aktualniho aktivniho cile napr AimB2  - AimName+SquareName+AimNo, nastavi se po kazdem stlaceni mezerniku
@@ -161,6 +161,7 @@ var CasZkoumej = 120; // cas na zacatku kazde dvojice ctvercu, kdy se clovek ma 
 var CasZkoumejPlotySchovej = 30; // za jak dlouhou dobu pri prohledavani se maj schovat ploty
 var CasZkoumejZbyva = 0; // Trening - kolik jeste zbyva casu na prozkoumani, nastavuje se automaticky na CasZkoumej a pak se odecita, Test - vzdy 0
 var CasZkoumejStart = 0; //  date object zacatku pocitani
+var TestCas = 90; // kolik vterin ma hrac na nalezeni cile v testu
 var SquareStart = ''; // jmeno ctverce kde zacina hledani zvirete. Plni se v  ActivateAnimal
 
 function init() {
@@ -182,9 +183,9 @@ function run() {
         text.create(TXT_SEKVENCE, ScreenX-500, 60, 0, 255,0, 3, ""); // cislo zvirete v sekvenci   - NALEZENO
         text.create(TXT_CHYBPOCET, ScreenX-500, 110, 255,0,0, 3, ""); // pocet chyb - CHYB
         text.create(TXT_CHYBA, Math.round(ScreenX/2.5), 30, 255, 0,0, 4, ""); // ohlaseni chyby
-        text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky
-        text.create(TXT_INSTRUKCE_ADD, 220, 500, 255, 255, 255, 3, "");
-        text.create(TXT_INSTRUKCE_MALE, 10, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male
+        text.create(TXT_INSTRUKCE, 200, 400, 255, 255, 255, 4, "" ); // instrukce uprostred obrazovky, napr KONEC, NOVA DVOJICE CTVERCU
+        text.create(TXT_INSTRUKCE_ADD, 220, 500, 255, 255, 255, 3, ""); // doplnujici instrukce, napr. ZMACKNETE MEZERNIK
+        text.create(TXT_INSTRUKCE_MALE, 200, 400, 255, 255, 255, 3, "" ); // instrukce uprostred obrazovky - male, napr. NEPOVEDLO SE VAM NAJIT CIL
         text.create(TXT_SEKUNDY, ScreenX - 160, 10, 255, 255, 255, 3, "" ); // pocet vterin do konce - male vpravo nahore
         if(Debug)  text.create(TXT_DEBUG,   ScreenX-500, 160, 255, 255, 255, 3, "" ); // text o aktualnim a cilovem ctverci - je pro ucely zkouseni testu
         Zamerovac(); // nastavi zamerovaci kruh na ukazovani smeru k cili
@@ -196,10 +197,10 @@ function run() {
             ZvirataSchovej(0);   //2022-11-25 v testu jsou vsecha zvirata skryta
             debug.log('Test: All animals are hidden');
         }*/
-        experiment.logToTrackLog("Script version: 2023-04-13"); // aby jsme poznali z vysledku, jaka to je verze skriptu
+        experiment.logToTrackLog("Script version: 2023-04-19"); // aby jsme poznali z vysledku, jaka to je verze skriptu
         debug.log("Script version: 2023-03-29");
 	}
-	if(typeof ActiveAimName === 'undefined' || typeof ActiveAimName === 'null'){ // nekdy se to ze zahadneho duvodu stane
+	if(typeof ActiveAimName === undefined || typeof ActiveAimName === null){ // nekdy se to ze zahadneho duvodu stane
         GetActiveNames(false); // tady vysledek nepotrebuju, chci jen nastavit  ActiveAimName
     }
 	if (key.pressed("g") && Debug){ // ukaz cilove misto - goal
@@ -291,14 +292,14 @@ function run() {
       IsPauza = false;
 	}
   if (!IsPauza && key.pressed("space")){   // ukazovani smerem na cil v testu + oznacovani cile pokud  MarkAimSpace
-    if(MarkAimSpace) debug.log('space pressed: IsInStartSquare ' + IsInStartSquare);
+    if(MarkAimSpace) debug.log('space pressed: IsInStartSquare ' + IsInStartSquare); // pokud 1 , oznacuje se v testu cil mezernikem. Nestaci do nej vejit
     if(DoTest) {
         if (!Ukazal) {  // ukazani na cil na zacatku testoveho trialu
             Ukazal = true;
             experiment.enablePlayerMovement(true); // povolim zase chuzi
             //experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
             text.modify(SHAPE_ZAMER, ""); SHAPE_ZAMER_Last = "";
-            TXT_UKOL_Last = "Najdi " + ActiveAimNameText;
+            TXT_UKOL_Last = "Najdete " + ActiveAimNameText;
             text.modify(TXT_UKOL, TXT_UKOL_Last);
             debug.log("Space pressed in Test:" + TXT_UKOL_Last);
             ShowAnimalPicture(ActiveTeepee, true); // radsi obrazek znovu zobrazim, nekdy se sam schova
@@ -307,28 +308,33 @@ function run() {
             TestCasStart = new Date();
             text.modify(TXT_SEKUNDY, TestCasZbyva); // kolik casu zbyva
             debug.log("timer: testlimit_" + iPhase + " " + TestCas + "s");
-        } else if (MarkAimSpace && !IsInStartSquare && IsInAim != '') { // oznacovani domnele pozice cile v testu
-            // nepusti se, pokud clovek neni v zadnem cili
-            if (IsInAim == ActiveAimName) { // nebo ActiveSquareName
-                // pokud je ve spravnem cili
-                // - hlaska + zvuk + deaktivace cilu (splneno)
-                OznacilCil = true; // oznacil spravne cil v testu mezernikem
-                EnteredAimReport(true);
-            } else {
-                // je ve spatnem cili
-                // hlaska + zvuk + zapocitani chyby
-                EnteredAvoidReport();
+        } else if (MarkAimSpace && !IsInStartSquare) { // oznacovani domnele pozice cile v testu
+            if (IsInAim != '') {
+                // nepusti se, pokud clovek neni v zadnem cili
+                if (IsInAim == ActiveAimName) { // nebo ActiveSquareName
+                    // pokud je ve spravnem cili
+                    // - hlaska + zvuk + deaktivace cilu (splneno)
+                    OznacilCil = true; // oznacil spravne cil v testu mezernikem
+                    EnteredAimReport(true);
+                } else {
+                    // je ve spatnem cili
+                    // hlaska + zvuk + zapocitani chyby
+                    EnteredAvoidReport();
+                }
+            } else { // neni ve spravnem cili
+                text.modify(TXT_INSTRUKCE_MALE,'JSTE MIMO STRED CTVERCE');
+                timer.set("mimo_stred_ctverce",2); // zobrazim na 2 vteriny a pak instrukce zase zmizi
             }
         }
-    } else if(!Ukazal && UkazovatTrening) { // ukazal na cil v treninku - 12.4.2023
+    } else if(!Ukazal && UkazovatTrening && CasZkoumejZbyva <= 0) { // ukazal na cil v treninku - 12.4.2023 - nesmi fungovat, pokud prohledava dvojici ctvercu - 19.4.2023
         Ukazal = true;
         //experiment.enablePlayerMovement(true); // povolim zase chuzi
         PlotPosun(iPhase,0); // skryje plot v teto fazi treningu, protoze jsem je ukazal behem ukazovani
         PlotyZmiz(1);
-        OrientationMarksHide(-1,[1,1]); // viditelny sever, skryte sochy
+        OrientationMarksShow(-1, [1, 1]); // viditelny sever, skryte sochy
         //experiment.modifyScreenShape(SHAPE_ZAMER, false);  // skryju zamerovaci krouzek
         text.modify(SHAPE_ZAMER, ""); SHAPE_ZAMER_Last="";
-        TXT_UKOL_Last = "Najdi " + ActiveAimNameText;
+        TXT_UKOL_Last = "Najdete " + ActiveAimNameText;
         text.modify(TXT_UKOL, TXT_UKOL_Last);
         debug.log("Space pressed in Trening:" + TXT_UKOL_Last);
         ShowAnimalPicture(ActiveTeepee, true); // radsi obrazek znovu zobrazim, nekdy se sam schova
@@ -434,25 +440,30 @@ function timerTask(name) {
         text.modify(TXT_SEKUNDY,CasZkoumejZbyva);
       } else { //trening: uplynul cas prozkoumavani dvojice ctvercu
         text.modify(TXT_SEKUNDY,"");
-        mark.get("Completed").beep(1.0);  // zahraju zvuk AAPP.Completed, bych upozornil, ze ma prestat prohledavat a plnit novy ukol
-        // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu
-        ActiveN =  GetActiveNames(true); // vrati jmena aktivniho cile a teepee
-        if (UkazovatTrening) {  // ukazovani na cil v treninku - 12.4.2023
-            TXT_UKOL_Last = "Ukaz na " + ActiveAimNameText;
-            Ukazal = false;
-            OrientationMarksHide(-1, [1, 0]); // viditelny sever, skryte sochy
-            text.modify(SHAPE_ZAMER, "+");
-            SHAPE_ZAMER_Last = "+";
-            debug.log("ActivateAnimal: SHAPE_ZAMER = + ");
-            text.modify(TXT_SEKUNDY, "");
+        if (IsInSquare==""){ // pokud neni zrovna v zadne ctverci - 19.4.2023
+            timer.set("CasZkoumejZbyva",1); // nastavim casovac znova a pokracuju v prozkoumavani nez dojde do nejakeho ctverce
+            CasZkoumejZbyva = 2; // potrebuju tady nejake cislo, abych signalizoval, ze porad prozkoumava
         } else {
-            TXT_UKOL_Last = "Najdi " + AnimalNames[ActiveN.ActiveTeepee];
+            mark.get("Completed").beep(1.0);  // zahraju zvuk AAPP.Completed, bych upozornil, ze ma prestat prohledavat a plnit novy ukol
+            // kdyz vyprsi cas zkoumani dvojice ctvercu v treningu
+            ActiveN = GetActiveNames(true); // vrati jmena aktivniho cile a teepee
+            if (UkazovatTrening) {  // ukazovani na cil v treninku - 12.4.2023
+                TXT_UKOL_Last = "Ukazte na " + ActiveAimNameText;
+                Ukazal = false;
+                OrientationMarksShow(-1, [1, 0]); // viditelny sever, skryte sochy
+                text.modify(SHAPE_ZAMER, "+");
+                SHAPE_ZAMER_Last = "+";
+                debug.log("ActivateAnimal: SHAPE_ZAMER = + ");
+                text.modify(TXT_SEKUNDY, "");
+            } else {
+                TXT_UKOL_Last = "Najdete " + AnimalNames[ActiveN.ActiveTeepee];
+            }
+            experiment.setPlayerRotation(0, 90); // [double Pitch, double Yaw] - natocim hrace na sever, aby musel trochu premyslet, kam ma jit - 10.3.2023
+            ActivateGoal(ActiveN.ActiveAimName, ActiveN.ActiveTeepee, iPhase, true);  // aktivuje aktualni cil i ostatni cile jako avoidance
+            debug.log("timerTask CasZkoumejZbyva: " + iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu
+            SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
+            IsInStartSquare = 1; // tohle ted povazuju za startovni ctverec - tam nechci pocita chyby, dokud z nej nevyjde
         }
-        experiment.setPlayerRotation(0,90); // [double Pitch, double Yaw] - natocim hrace na sever, aby musel trochu premyslet, kam ma jit - 10.3.2023
-        ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance
-        debug.log("timerTask CasZkoumejZbyva: "+iPhase + " " + TXT_UKOL_Last);  // zapise ukol do logu
-        SkryjNapisy(false); // zase ukaze - po pauze -  obrazek zvirete na obrazovce a text TXT_UKOL
-        IsInStartSquare = 1 ; // tohle ted povazuju za startovni ctverec - tam nechci pocita chyby, dokud z nej nevyjde
       }
     } else if (name=="CasZkoumejPlotySchovej"){
         if (CasZkoumejZbyva>0) PlotyZmiz(true); // schova vsechny ploty, jsou tam, ale neviditelne
@@ -526,6 +537,8 @@ function timerTask(name) {
         }
       }
       timer.set("SquareLeftEntered",TimerCyclePeriod);
+    } else if(name=="mimo_stred_ctverce"){
+      text.modify(TXT_INSTRUKCE_MALE,"");
     }
 }
 function ActivateSquares(iPhase){
@@ -555,7 +568,7 @@ function ActivateSquares(iPhase){
        if(iPhase>=SquarePairs.length && SquarePairsAdded >= SquarePairsErrorsLimit2) {
           SquarePairsAddRepeat(SquarePairsToAdd); // pridam jeste prvni osm dvojic ctvercu, aby si je jeste obcerstvili
        }
-       if(iPhase>=SquarePairs.length) {
+       if(iPhase>=SquarePairs.length || iPhase >= iPhaseTrainingMax) {
           // pokud uz jsem vycerpal vsechny pary ctvercu, ukoncim experiment
           text.modify(TXT_INSTRUKCE,"KONEC");
           debug.log('TXT_INSTRUKCE = konec');
@@ -589,9 +602,9 @@ function ActivateAnimal(iPhase,iSequence){
      // OBRAZEK A TEXT KAM NAVIGOVAT
      if(DoTest) { // v testu ma nejdriv ukazat na cil
         PresunHrace(iPhase);   // test
-        OrientationMarksHide(iPhase,[]); // zobraz skryj orientacni znacky / kompasy podle TestSequence[4-5]
+        OrientationMarksShow(iPhase, []); // zobraz skryj orientacni znacky / kompasy podle TestSequence[4-5]
         ZvirataSchovej(2); //2022-11-25 v testu jsou vsecha zvirata skryta, krome toho kde stojim, pokud nejsou videt orientacni znacky (tj je viden jen kompas) 
-        TXT_UKOL_Last = "Ukaz na "+ActiveAimNameText;
+        TXT_UKOL_Last = "Ukazte na "+ActiveAimNameText;
         Ukazal = false;
         OznacilCil = false;
         experiment.enablePlayerMovement(false); // zakazu chuzi
@@ -607,14 +620,14 @@ function ActivateAnimal(iPhase,iSequence){
         // casovac nastavim az po uplynuti pauzy (na zacatku nove dvojice ctvercu v treningu)
      } else { // trening: nalezeni druheho zvirete v dvojici ctvercu
         if (UkazovatTrening) {  // ukazovani na cil v treninku - 12.4.2023
-            TXT_UKOL_Last = "Ukaz na " + ActiveAimNameText;
+            TXT_UKOL_Last = "Ukazte na " + ActiveAimNameText;
             Ukazal = false;
-            OrientationMarksHide(-1,[1,0]); // viditelny sever, skryte sochy
+            OrientationMarksShow(-1, [1, 0]); // viditelny sever, skryte sochy
             text.modify(SHAPE_ZAMER,"+"); SHAPE_ZAMER_Last = "+";
             debug.log("ActivateAnimal: SHAPE_ZAMER = + ");
             text.modify(TXT_SEKUNDY,"");
         } else {
-            TXT_UKOL_Last = "Najdi " + ActiveAimNameText;
+            TXT_UKOL_Last = "Najdete " + ActiveAimNameText;
         }
         experiment.setPlayerRotation(0,90); // [double Pitch, double Yaw] - natocim hrace na sever, aby musel trochu premyslet, kam ma jit - 10.3.2023
         ActivateGoal(ActiveN.ActiveAimName,ActiveN.ActiveTeepee,iPhase,true);  // aktivuje aktualni cil i ostatni cile jako avoidance
@@ -937,27 +950,31 @@ function ZvirataSchovej(ukaz){
        }
     }
 }
-function OrientationMarksHide(iiPhase,ToHide){ // spanav neumi default parametr values, jinak by tu bylo ToHide=[]
-    // skryje nebo zobrazi cedule sever a sochy/stromy podle parametru ToHide[a,b];
-    // pokud je ToHide prazdne, pouzije TestSequence[iiPhase][4] a [5]
+function OrientationMarksShow(iiPhase, ToShow){ // spanav neumi default parametr values, jinak by tu bylo ToShow=[]
+    // skryje nebo zobrazi cedule sever a sochy/stromy podle parametru ToShow[a,b];
+    // pokud je ToShow prazdne, pouzije TestSequence[iiPhase][4] a [5]
     // prvni cislo 'a' rika jestli maji byt videt cedule sever (1), druhe cislo 'b' jestli sochy a stromy (1)
-    // iiPhase se nepouziva, pokud se pouziva ToHide
-    if(ToHide.length <2){
-        ToHide = [TestSequence[iiPhase][4] , TestSequence[iiPhase][5]];
+    // iiPhase se nepouziva, pokud se pouziva ToShow
+    // 19.4.2023 - toHide prejmenovano na toShow a funkce prejmenovana na OrientationMarksShow
+    if(ToShow.length <2){
+        ToShow = [TestSequence[iiPhase][4] , TestSequence[iiPhase][5]];
     }
     for(j=0; j<AllSquares.length;j++){
         // cyklus pres vsechny ctverce
         KompasJmeno = CompasName + AllSquares[j];    // napr. CeduleSeverA
-        mark.get(KompasJmeno).setVisible(ToHide[0]); // zobrazim / skryju kompas
+        mark.get(KompasJmeno).setVisible(ToShow[0]); // zobrazim / skryju kompas
         for (m = 1; m<=4;m++){
           // cyklus pres 4  znacky ve ctverci
           MarkJmeno =   MarkName+ AllSquares[j]+m; // napr. MarkA1
           MarkObject = mark.get(MarkJmeno);
           if(MarkObject!=undefined){
-            MarkObject.setVisible(ToHide[1]); // zobrazim / skryju znacku
+            MarkObject.setVisible(ToShow[1]); // zobrazim / skryju znacku
           }
         }
     }
+    var msg = "Orientation Marks Shown : North Compas " + ToShow[0] + ", Statues : " + ToShow[1]; // 19.4.2023
+    debug.log(msg);
+    experiment.logToTrackLog(msg);
 }
 function PresunHrace(iiPhase){
      SquareName = CtverecJmeno(0); // presun na startovni ctverec
@@ -1073,7 +1090,11 @@ function NextTrial(nextPhase){
 		  AnimalPictureShown = false;
 	  }
     }
-    text.modify(TXT_SEKVENCE,"NALEZENO:" + Nalezenych);
+    if(Nalezenych>0) { // nechce demotivovat zpravou, ze jeste nic nenasel - 19.4.2023
+        text.modify(TXT_SEKVENCE,"NALEZENO:" + Nalezenych);
+    } else {
+        text.modify(TXT_SEKVENCE,"");
+    }
     experiment.logToTrackLog("Entrances:" + (DoTest ? TestEntrances : iPhase + "/" + iSequence) );
 }
 function NextInSequence(reset){  // posune AnimalSequence (tj cislo zvirete v ramci faze) dopredu, takze prvni da nakonec a kazdy dalsi o pozici dopredu

@@ -4,29 +4,35 @@ var TestSequence = [
 // 2. cislo urcuje ze ktereho ctverce se startuje 0=druhy (v prvnim radku A), 1=prvni (v tretim radku B)
 // 3.a 4. cislo urcuje co je videt 3. je kompas (sipka), 4. jsou 4 orientacni znacky (stromy aj).  
 ['A','B',0,0,0,1], //1  Najdi JELENA = A
-['G','I',0,0,1,0], //2  Najdi MOTYLA =G
+['I','H',0,0,1,0], //2  
 ['B','F',0,1,1,0], //3  Najdi KROKODYLA
 ['C','E',0,1,0,1], //4  Najdi KOCKU = E
-['G','D',0,0,1,0], //5  Najdi MOTYLA = G
+['G','D',0,1,1,0], //5  Najdi MOTYLA = G
 ['D','F',0,1,0,1], //6  Najdi KROKODYLA = F
 ['E','G',0,1,1,0], //7  Najdi MOTYLA = G
 ['G','I',0,1,0,1], //8
-['B','C',0,0,1,0], //9  Najdi KOLIBRIKA C->B
-['I','H',0,0,0,1], //10
-['G','I',0,1,1,0], //11
-['B','F',0,1,0,1], //12
+['B','C',0,1,1,0], //9  Najdi KOLIBRIKA C->B
+['G','I',0,0,0,1], //10
+['G','I',0,0,1,0], //11
+['B','F',0,0,0,1], //12
 ['D','H',0,0,1,0], //13
 ['H','G',0,0,0,1], //14
-['A','C',0,1,1,0], //15 Najdi ZEBRU A -> C
+['A','C',0,0,1,0], //15 Najdi ZEBRU A -> C
 ['D','H',0,1,0,1], //16 Najdi KACHNU D -> H
 ['D','F',0,0,1,0], //17 Najdi PRASE F-> D
-['A','B',0,0,1,0], //18
+['A','B',0,1,1,0], //18
 ['F','E',0,1,0,1], //19
 ['A','C',0,1,0,1], //20
 ['E','H',0,0,1,0], //21
 ['B','E',0,0,0,1], //22
 ['C','F',0,0,1,0], //23
-['D','F',0,1,0,1] //24
+['D','F',0,0,0,1], //24
+['B','E',0,1,1,0], //25 25 az 30 - 19.4.2023
+['A','C',0,1,1,0], //26
+['E','D',0,1,0,1], //27
+['F','E',0,0,1,0], //28
+['D','F',0,1,0,1], //29
+['C','E',0,0,0,1]  //30
 ]; 
 /*
 , //25
